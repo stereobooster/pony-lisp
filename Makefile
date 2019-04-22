@@ -60,8 +60,13 @@ docs:
 	cp -R docs-tmp/http-docs/site docs
 	rm -rf docs-tmp
 
+clean-test: clean test
+
 docker-build:
 	docker run -it --rm -v "$(shell pwd):/src/main" ponylang/ponyc make
+
+docker-test:
+	docker run -it --rm -v "$(shell pwd):/src/main" ponylang/ponyc make clean-test
 
 docker-run:
 	docker run -it --rm -v "$(shell pwd):/src/main" ponylang/ponyc /src/main/$(build_binary)
