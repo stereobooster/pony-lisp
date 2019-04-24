@@ -2,7 +2,7 @@ use "term"
 use "promises"
 
 class Handler is ReadlineNotify
-  let _commands: Array[String] = _commands.create()
+  let _commands: Array[String] = []
   var _i: U64 = 0
 
   new create() =>
