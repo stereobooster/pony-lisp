@@ -6,18 +6,18 @@ class Handler is ReadlineNotify
   var _i: U64 = 0
 
   new create() =>
-    _commands.push("quit")
+    _commands.push("(quit)")
 
   fun ref apply(line: String, prompt: Promise[String]) =>
-    if line == "quit" then
+    if line == "(quit)" then
       prompt.reject()
     else
       _i = _i + 1
       try
         let result = Calculator.eval(Parser.parse(line)?)?
-        prompt(result.string() + "\n" + _i.string() + " > ")
+        prompt(result.string() + " " + _i.string() + " > ")
       else
-        prompt("Error\n" + _i.string() + " > ")
+        prompt("Error " + _i.string() + " > ")
       end
     end
 
@@ -34,7 +34,7 @@ class Handler is ReadlineNotify
 
 actor Main
   new create(env: Env) =>
-    env.out.print("Use 'quit' to exit.")
+    env.out.print("Use '(quit)' to exit.")
 
     // Building a delegate manually
     let term = ANSITerm(Readline(recover Handler end, env.out), env.input)
