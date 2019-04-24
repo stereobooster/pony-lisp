@@ -7,26 +7,19 @@ class Handler is ReadlineNotify
 
   new create() =>
     _commands.push("quit")
-    _commands.push("happy")
-    _commands.push("hello")
 
   fun ref apply(line: String, prompt: Promise[String]) =>
     if line == "quit" then
       prompt.reject()
     else
       _i = _i + 1
-      prompt(_i.string() + " > ")
-    end
-    _update_commands(line)
-
-  fun ref _update_commands(line: String) =>
-    for command in _commands.values() do
-      if command.at(line, 0) then
-        return
+      try
+        let result = Calculator.eval(Parser.parse(line)?)?
+        prompt(result.string() + "\n" + _i.string() + " > ")
+      else
+        prompt("Error\n" + _i.string() + " > ")
       end
     end
-
-    _commands.push(line)
 
   fun ref tab(line: String): Seq[String] box =>
     let r = Array[String]

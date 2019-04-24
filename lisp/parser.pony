@@ -19,12 +19,12 @@ type ParseResult is (USize, Node)
 
 class Node
   let kind: NodeKind
-  let contnent: String
+  let content: String
   let children: Array[Node]
 
-  new create(kind': NodeKind, contnent': String, children': Array[Node]) =>
+  new create(kind': NodeKind, content': String, children': Array[Node]) =>
     kind = kind'
-    contnent = contnent'
+    content = content'
     children = children'
 
 primitive Parser

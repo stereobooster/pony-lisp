@@ -8,3 +8,4 @@ actor Main is TestList
   fun tag tests(test: PonyTest) =>
     TokenizerTest.make().tests(test)
     ParserTest.make().tests(test)
+    CalculatorTest.make().tests(test)
