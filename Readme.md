@@ -12,6 +12,7 @@ make docker-build
 - http://matt.might.net/articles/implementing-a-programming-language/
 - https://carld.github.io/2017/06/20/lisp-in-less-than-200-lines-of-c.html
 - http://norvig.com/lispy.html
+- https://m.stopa.io/risp-lisp-in-rust-90a0dad5b116?gi=3c4b860a722b
 
 ## Pony reference
 
