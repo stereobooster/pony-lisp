@@ -15,6 +15,8 @@ make docker-build
 - https://m.stopa.io/risp-lisp-in-rust-90a0dad5b116?gi=3c4b860a722b
 - https://github.com/inexorabletash/jisp
 - http://kanaka.github.io/lambdaconf/#/12
+- https://www.youtube.com/watch?v=OyfBQmvr2Hc
+- http://languagelog.ldc.upenn.edu/myl/ldc/llog/jmc.pdf
 
 ## Pony reference
 
