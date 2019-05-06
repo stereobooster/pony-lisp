@@ -13,6 +13,8 @@ make docker-build
 - https://carld.github.io/2017/06/20/lisp-in-less-than-200-lines-of-c.html
 - http://norvig.com/lispy.html
 - https://m.stopa.io/risp-lisp-in-rust-90a0dad5b116?gi=3c4b860a722b
+- https://github.com/inexorabletash/jisp
+- http://kanaka.github.io/lambdaconf/#/12
 
 ## Pony reference
 
