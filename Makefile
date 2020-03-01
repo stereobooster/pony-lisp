@@ -62,13 +62,16 @@ docs:
 
 clean-test: clean test
 
+docker-build-image:
+	docker build -t pony-lisp/ponyc .
+
 docker-build:
-	docker run -it --rm -v "$(shell pwd):/src/main" ponylang/ponyc make
+	docker run -it --rm -v "$(shell pwd):/src/main" pony-lisp/ponyc make
 
 docker-test:
-	docker run -it --rm -v "$(shell pwd):/src/main" ponylang/ponyc make clean-test
+	docker run -it --rm -v "$(shell pwd):/src/main" pony-lisp/ponyc make clean-test
 
 docker-run:
-	docker run -it --rm -v "$(shell pwd):/src/main" ponylang/ponyc /src/main/$(build_binary)
+	docker run -it --rm -v "$(shell pwd):/src/main" pony-lisp/ponyc /src/main/$(build_binary)
 
 default: all

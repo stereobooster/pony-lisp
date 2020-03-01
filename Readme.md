@@ -3,7 +3,9 @@
 Nothing to see here. Just an experiment.
 
 ```sh
+make docker-build-image
 make docker-build
+make docker-run
 ```
 
 ## Lisp reference
