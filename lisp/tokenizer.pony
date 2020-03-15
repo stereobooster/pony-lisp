@@ -8,9 +8,9 @@ type TokenizationState is (NotInToken | InToken)
 primitive OpeningParenthesis
 primitive ClosingParenthesis
 primitive Comment
-primitive Atom
+primitive AtomToken
 
-type TokenKind is (OpeningParenthesis | ClosingParenthesis | Atom | Comment)
+type TokenKind is (OpeningParenthesis | ClosingParenthesis | AtomToken | Comment)
 
 class Token
   let kind: TokenKind
@@ -36,7 +36,7 @@ primitive Tokenizer
         | '(' =>
           // Debug("(")
           if (state is InToken) then
-            tokens.push(Token(Atom, atomStart, token))
+            tokens.push(Token(AtomToken, atomStart, token))
             token = ""
           end
           tokens.push(Token(OpeningParenthesis, i, "("))
@@ -46,7 +46,7 @@ primitive Tokenizer
         | ')' =>
           // Debug(")")
           if (state is InToken) then
-            tokens.push(Token(Atom, atomStart, token))
+            tokens.push(Token(AtomToken, atomStart, token))
             token = ""
           end
           tokens.push(Token(ClosingParenthesis, i, ")"))
@@ -56,13 +56,12 @@ primitive Tokenizer
         | ';' =>
           // Debug("Comment")
           if (state is InToken) then
-            tokens.push(Token(Atom, atomStart, token))
+            tokens.push(Token(AtomToken, atomStart, token))
             token = ""
           end
           var commentStart = i
           while (i < source.size()) and (source(i)? != '\n') do
             char = source(i)?
-            // token.push(char)
             token = token.add(String.from_array([char]))
             i = i + 1
           end
@@ -73,18 +72,17 @@ primitive Tokenizer
         | '\t' | '\r' | '\n' | ' ' =>
           // Debug("Empty")
           if (state is InToken) then
-            tokens.push(Token(Atom, atomStart, token))
+            tokens.push(Token(AtomToken, atomStart, token))
             token = ""
           end
           state = NotInToken
 
         | let x: U8 =>
-          // Debug("Atom")
+          // Debug("AtomToken")
           if (state is NotInToken) then
             atomStart = i
           end
           state = InToken
-          // token.push(char)
           token = token.add(String.from_array([char]))
       end
       i = i + 1

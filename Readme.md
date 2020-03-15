@@ -24,3 +24,4 @@ make docker-run
 
 - https://www.ponylang.io/media/cheatsheet/pony-cheat-sheet.pdf
 - https://tutorial.ponylang.io/reference-capabilities/reference-capabilities.html
+- https://github.com/vassilvk/cross-pony-docker

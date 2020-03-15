@@ -9,7 +9,7 @@ actor TokenizerTest is TestList
     test(_TestEmpty)
     test(_TestParenthesis)
     test(_TestComment)
-    test(_TestAtom)
+    test(_TestAtomToken)
 
 class iso _TestEmpty is UnitTest
   fun name(): String => "empty string"
@@ -42,7 +42,7 @@ class iso _TestComment is UnitTest
     h.assert_true(t(1)?.kind is Comment)
     h.assert_eq[String](t(1)?.content, "; comment")
 
-class iso _TestAtom is UnitTest
+class iso _TestAtomToken is UnitTest
   fun name(): String => "atom"
 
   fun apply(h: TestHelper)? =>
@@ -50,9 +50,9 @@ class iso _TestAtom is UnitTest
     h.assert_eq[USize](t.size(), 4)
 
     h.assert_eq[USize](t(1)?.offset, 1)
-    h.assert_true(t(1)?.kind is Atom)
+    h.assert_true(t(1)?.kind is AtomToken)
     h.assert_eq[String](t(1)?.content, "cons")
 
     h.assert_eq[USize](t(2)?.offset, 6)
-    h.assert_true(t(2)?.kind is Atom)
+    h.assert_true(t(2)?.kind is AtomToken)
     h.assert_eq[String](t(2)?.content, "1")

@@ -2,11 +2,8 @@ use "ponytest"
 use ".."
 
 actor CalculatorTest is TestList
-  new create(env: Env) =>
-    PonyTest(env, this)
-
-  new make() =>
-    None
+  new create(env: Env) => PonyTest(env, this)
+  new make() => None
 
   fun tag tests(test: PonyTest) =>
     test(_CalculatorTestAddition)

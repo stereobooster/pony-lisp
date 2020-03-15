@@ -2,17 +2,16 @@ use "regex"
 
 primitive RootNode
 primitive SExpression
-
-// algebra
-primitive Plus
-primitive Minus
-primitive Multiplication
-primitive Division
+primitive SymbolNode
+// add support of negative values `-x` and floats `x.x`
 primitive IntegerNode
+primitive BooleanNode
+// to support string nodes we need to handle ` `, `\"` in Tokenizer
+primitive StringNode
 
 type NodeKind is (
-    RootNode | SExpression | Atom
-  | Plus | Minus | Multiplication | Division | IntegerNode
+    RootNode | SExpression |
+    SymbolNode | IntegerNode | BooleanNode | StringNode
 )
 
 type ParseResult is (USize, Node)
@@ -39,13 +38,13 @@ primitive Parser
     while i < tokens.size() do
       var token = tokens(i)?
       match token
-        | let x: Token if x.kind is OpeningParenthesis =>
+        | let t: Token if t.kind is OpeningParenthesis =>
           (let j, let node) = Parser.parseTokens(tokens, i + 1)?
           children.push(node)
           i = j
-        | let x: Token if x.kind is ClosingParenthesis =>
+        | let t: Token if t.kind is ClosingParenthesis =>
           break
-        | let t: Token if t.kind is Atom =>
+        | let t: Token if t.kind is AtomToken =>
           children.push(Parser.parseAtom(t)?)
           i = i + 1
         | let t: Token if t.kind is Comment =>
@@ -58,11 +57,10 @@ primitive Parser
 
   fun parseAtom(token: Token): Node ? =>
     match token.content
-      | "+" => return Node(Plus, token.content, [])
-      | "-" => return Node(Minus, token.content, [])
-      | "*" => return Node(Multiplication, token.content, [])
-      | "/" => return Node(Division, token.content, [])
-      | Regex("\\d+")? => return Node(IntegerNode, token.content, [])
+      | Regex("\\d+")? => Node(IntegerNode, token.content, [])
+      // | "#t" => Node(BooleanNode, token.content, [])
+      // | "#f" => Node(BooleanNode, token.content, [])
+      // | Regex("\".*\"")? => Node(StringNode, token.content, [])
     else
-      return Node(Atom, token.content, [])
+      Node(SymbolNode, token.content, [])
     end

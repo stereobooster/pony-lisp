@@ -4,24 +4,26 @@ primitive Calculator
       | RootNode => Calculator.eval(node.children(0)?)?
       | SExpression => Calculator.evalExpression(node.children)?
       | IntegerNode => node.content.u64()?
+      // | StringNode => node.content
+      // | BooleanNode => node.content == "#t"
     else
-      U64(0)
+      error
     end
 
   fun evalExpression (nodes: Array[Node]): U64 ? =>
     if nodes.size() == 0 then
-      return U64(0)
+      error
     end
 
     let rest = nodes.slice(1, nodes.size())
 
-    match nodes(0)?.kind
-      | Plus => Calculator.evalPlus(rest)?
-      | Minus => Calculator.evalMinus(rest)?
-      | Multiplication => Calculator.evalMultiplication(rest)?
-      | Division => Calculator.evalDivision(rest)?
+    match nodes(0)?.content
+      | "+" => Calculator.evalPlus(rest)?
+      | "-" => Calculator.evalMinus(rest)?
+      | "*" => Calculator.evalMultiplication(rest)?
+      | "/" => Calculator.evalDivision(rest)?
     else
-      U64(0)
+      error
     end
 
   fun evalPlus (nodes: Array[Node]): U64 ? =>
