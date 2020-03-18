@@ -22,7 +22,10 @@ ifeq ($(config),debug)
 endif
 
 .PHONY: all build
-all: clean test build
+all: clean fetch test build
+
+fetch:
+	stable fetch
 
 build:
 	stable env $(PONYC) $(PONYC_FLAGS) $(SRC_DIR) -o $(BUILD_DIR)
