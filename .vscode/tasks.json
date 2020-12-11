@@ -1,0 +1,38 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "make",
+			"script": "all",
+			"path": "",
+			"fileName": "Makefile",
+			"uri": {
+				"$mid": 1,
+				"path": "/workspaces/pony-lisp/Makefile",
+				"scheme": "vscode-remote",
+				"authority": "dev-container+2f55736572732f737679736f6b696e736b692f636f64652f706f6e792d6c697370"
+			},
+			"problemMatcher": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"label": "make: all"
+		},
+		{
+			"type": "make",
+			"script": "TAGS",
+			"path": "",
+			"fileName": "Makefile",
+			"uri": {
+				"$mid": 1,
+				"path": "/workspaces/pony-lisp/Makefile",
+				"scheme": "vscode-remote",
+				"authority": "dev-container+2f55736572732f737679736f6b696e736b692f636f64652f706f6e792d6c697370"
+			},
+			"problemMatcher": [],
+			"group": "build",
+			"label": "make: TAGS"
+		}
+	]
+}

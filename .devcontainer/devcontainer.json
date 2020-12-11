@@ -1,0 +1,20 @@
+{
+	"name": "Pony",
+	"build": { 
+		"context": "..",
+		"dockerfile": "Dockerfile",
+	},
+
+	// Set custom container specific settings.json values on container create
+	"settings": {
+		"terminal.integrated.shell.linux": "/bin/zsh",
+		"terminal.integrated.inheritEnv": false,
+	},
+
+	// Add the IDs of extensions you want installed when the container is created
+	"extensions": [
+		"npruehs.pony",
+		"jaydenlin.ctags-support",
+		"spmeesseman.vscode-taskexplorer"
+	],
+}

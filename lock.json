@@ -1,0 +1,10 @@
+{
+  "locks": [
+    {
+      "locator": "github.com/mfelsche/pony-maybe.git"
+    },
+    {
+      "locator": "github.com/ponylang/regex.git"
+    }
+  ]
+}
