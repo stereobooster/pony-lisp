@@ -1,37 +1,6 @@
 use "regex"
 use "collections"
 
-type Atom is (U64 | F64 | String | None | Bool | Symbol)
-type AstType is (Atom | MapType | ListType)
-
-class Symbol
-  let value: String
-  new create(value': String) =>
-    value = value'
-  fun eq(that: box->Symbol): Bool =>
-    this.value == that.value
-
-primitive VectorKind
-primitive ListKind
-type CollectionKind is (VectorKind | ListKind)
-
-// we need those closses because Pony doesn't support recursive types
-class ListType
-  let data: Array[AstType]
-  let kind: CollectionKind
-  new create(data': Array[AstType], kind': CollectionKind = ListKind) =>
-    data = data'
-    kind = kind'
-  fun ref get (): Array[AstType] =>
-    data
-
-class  MapType
-  let data: Map[String, AstType]
-  new create(data': Map[String, AstType]) =>
-    data = data'
-  fun ref get (): Map[String, AstType] =>
-    data
-
 class Reader
   let _tokens: Array[String]
   var _position: USize
@@ -102,8 +71,7 @@ fun read_raw_list(reader: Reader, start: String, finish: String): Array[AstType]
   end
   while (token = reader.peek()?) != finish do
     // if (token == None) {
-    //   error
-    //   // "expected '" + finish + "', got EOF"
+    //   error // "expected '" + finish + "', got EOF"
     // end
     list.push(read_form(reader)?)
   end
@@ -153,18 +121,17 @@ fun read_form(reader: Reader): AstType ? =>
       return ListType([Symbol("deref"); read_form(reader)?])
 
   // list
-  | ")" => error // throw new Error("unexpected ')'")
+  | ")" => error // "unexpected ')'"
   | "(" => return read_list(reader)?
 
   // vector
-  | "]" => error // throw new Error("unexpected ']'")
+  | "]" => error // "unexpected ']'"
   | "[" => return read_vector(reader)?
 
   // hash-map
-  | "}" => error // throw new Error("unexpected '}'")
+  | "}" => error // "unexpected '}'"
   | "{" => return read_hash_map(reader)?
 
-  // atom
   else 
     read_atom(reader)?
   end
@@ -172,8 +139,8 @@ fun read_form(reader: Reader): AstType ? =>
 
 fun read_str(str: String) ? =>
   let tokens = tokenize(str)?
-  let reader = Reader(tokens)
   if tokens.size() == 0 then 
-    error
+    error // empty input
   end
+  let reader = Reader(tokens)
   read_form(reader)?

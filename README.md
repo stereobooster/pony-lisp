@@ -21,3 +21,22 @@ Do not use.
 - `Cmd` + `T` - go to defintion (you need to build tags first - `make tag`)
 - `Shift` + `^` + `\`` - open terminal
 - You can use `Cmd` + `Click` in terminal to open files
+- `Cmd` + `B` - show/hide file explorer
+- `Cmd` + `J` - show/hide terminal panel
+- `Ctrl` + `Shift` + `P` - open command palette
+- `Ctrl` + `P` - search files
+- `Ctrl` + `K` `Enter` - keep file open
+- `Shift` + `Option` + `F` - format file
+- `Shift` + `Option` + `R` - open in file explorer
+
+- https://code.visualstudio.com/docs/getstarted/tips-and-tricks
+- https://code.visualstudio.com/shortcuts/keyboard-shortcuts-macos.pdf
+- https://code.visualstudio.com/docs/getstarted/keybindings
+- https://tkainrad.dev/posts/learning-all-vscode-shortcuts-evolved-my-developing-habits/
+
+## Pony first impression
+
+- No recursive types
+- No way to pass error message with exception
+- Potential issues with utf-8 strings?
+- Hard to read error messages
