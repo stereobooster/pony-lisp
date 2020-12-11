@@ -51,7 +51,7 @@ TAGS:
 	ctags -R -f .tags
 	# ctags --recurse=yes $(SRC_DIR)
 
-all: test
+all: clean test
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)

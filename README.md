@@ -20,15 +20,15 @@ Do not use.
 - `Cmd` + `Shift` + `B` - build
 - `Cmd` + `T` - go to defintion (you need to build tags first - `make tag`)
 - `Shift` + `^` + `\`` - open terminal
+- `^` + `\`` - toggle terminal
+- `Cmd` + `J` - toggle terminal panel
 - You can use `Cmd` + `Click` in terminal to open files
-- `Cmd` + `B` - show/hide file explorer
-- `Cmd` + `J` - show/hide terminal panel
+- `Cmd` + `B` - toggle file explorer
 - `Ctrl` + `Shift` + `P` - open command palette
 - `Ctrl` + `P` - search files
 - `Ctrl` + `K` `Enter` - keep file open
 - `Shift` + `Option` + `F` - format file
-- `Shift` + `Option` + `R` - open in file explorer
-
+s
 - https://code.visualstudio.com/docs/getstarted/tips-and-tricks
 - https://code.visualstudio.com/shortcuts/keyboard-shortcuts-macos.pdf
 - https://code.visualstudio.com/docs/getstarted/keybindings
