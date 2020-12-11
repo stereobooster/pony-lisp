@@ -34,6 +34,9 @@ Do not use.
 - https://code.visualstudio.com/docs/getstarted/keybindings
 - https://tkainrad.dev/posts/learning-all-vscode-shortcuts-evolved-my-developing-habits/
 
+- https://marketplace.visualstudio.com/items?itemName=mads-hartmann.yassnippet
+- https://github.com/ponylang/pony-snippets
+
 ## Pony first impression
 
 - No recursive types
