@@ -3,6 +3,9 @@ use "collections"
 use "debug"
 use "json"
 
+// There seems to ba a bug in Pony type checker - it doesn't allow me to use AstType here
+// instead it forces me to use AstTypeAndNativeFunction
+
 class Token
   let content: String
   let start: USize
@@ -15,13 +18,16 @@ class Token
 
 primitive Tokenizer
   fun tokenize(str: String): Array[String] ? =>
+    // official version
+    // let r = Regex("""[\s,]*(~@|[\[\]{}()'`~^@]|"(?:\\.|[^\\"])*"?|;.*|[^\s\[\]{}('"`,;)]*)""")?
+    // version copied from Python implementation
     let r = Regex("""[\s,]*(~@|[\[\]{}()'`~^@]|"(?:[\\].|[^\\"])*"?|;.*|[^\s\[\]{}()'"`@,;]+)""")?
     let matches = r.matches(str)
     let result: Array[String] = []
     for element in matches do
       // ignore comments
       if element(1)? != ";" then
-        Debug(element.start_pos())
+        // Debug(element.start_pos())
         // result.push(Token(element(1)?, element.start_pos(), element.end_pos()))
         result.push(element(1)?)
       end
@@ -57,7 +63,7 @@ class Reader
     _float_r = Regex("^-?[0-9][0-9.]*$")?
     _string_r = Regex(""""(?:[\\].|[^\\"])*"""")?
 
-  fun debug_val(value: AstType) =>
+  fun debug_val(value: AstTypeAndNativeFunction) =>
     match value
     | None => Debug(None)
     | let x: Bool => Debug(x)
@@ -102,8 +108,8 @@ class Reader
       end
     end
 
-  fun read_sequence(stream: TokenStream, start: String, finish: String): Array[AstType] ? =>
-    let list: Array[AstType] = []
+  fun read_sequence(stream: TokenStream, start: String, finish: String): Array[AstTypeAndNativeFunction] ? =>
+    let list: Array[AstTypeAndNativeFunction] = []
     var token = stream.next()?
     if token != start then
       Debug("expected '" + start + "'")
@@ -133,7 +139,7 @@ class Reader
       Debug("odd number of hash map arguments")
       error
     end
-    let hash = Map[String, AstType](list.size()/2)
+    let hash = Map[String, AstTypeAndNativeFunction](list.size()/2)
     var i: USize = 0
     while i < list.size() do
       match list(i)?
@@ -147,7 +153,7 @@ class Reader
     end
     MapType(hash)
 
-  fun read_form(stream: TokenStream): AstType ? =>
+  fun read_form(stream: TokenStream): AstTypeAndNativeFunction ? =>
     let token = stream.peek()?
     match token
     // stream macros/transforms
@@ -188,7 +194,7 @@ class Reader
       read_atom(stream)?
     end
 
-  fun read_str(str: String): AstType ? =>
+  fun read_str(str: String): AstTypeAndNativeFunction ? =>
     let tokens = Tokenizer.tokenize(str)?
     if tokens.size() == 0 then
       Debug("empty input")
