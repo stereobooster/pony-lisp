@@ -39,7 +39,8 @@ s
 
 ## Pony first impression
 
-- No recursive types
-- No way to pass error message with exception
+- No recursive types, need to use classes instead
+- No way to pass error message with exception (`error`)
 - Potential issues with utf-8 strings?
 - Hard to read error messages
+- `SomeClass` will create instance of a given calss, the same as `SomeClass()` (but second requires `new create`)

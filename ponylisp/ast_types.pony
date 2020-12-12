@@ -1,14 +1,16 @@
 use "collections"
 
-type Atom is (U64 | F64 | String | None | Bool | Symbol)
+type Atom is (I64 | F64 | String | None | Bool | Symbol)
 type AstType is (Atom | MapType | ListType)
 
-class Symbol
+class Symbol // is Stringable
   let value: String
   new create(value': String) =>
     value = value'
   fun eq(that: box->Symbol): Bool =>
     this.value == that.value
+  fun string(): String =>
+    value
 
 primitive VectorKind
 primitive ListKind
