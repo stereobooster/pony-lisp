@@ -15,7 +15,7 @@ class NFSuccess[R]
 type NFResult[R] is (NFError | NFSuccess[R])
 
 primitive DecodeArray
-  fun i64(input: Array[LispType]): NFResult[Array[I64]] =>
+  fun i64(input: Array[MalType]): NFResult[Array[I64]] =>
     // why this doesn't work? 
     // NFSuccess[Array[I64]](input as Array[I64])
     let output = Array[I64](input.size())
@@ -31,15 +31,15 @@ primitive DecodeArray
 interface NativeFunction
   // it can provide documentation or type signature
   fun name(): String
-  fun apply(input: Array[LispType]): NFResult[LispType] 
+  fun apply(input: Array[MalType]): NFResult[MalType] 
 
 interface NativePartialFunction
   fun name(): String
-  fun apply(input: Array[LispType]): NFResult[LispType] ?
+  fun apply(input: Array[MalType]): NFResult[MalType] ?
 
 class PlusFunction is NativeFunction
   fun name(): String => "+"
-  fun apply(input: Array[LispType]): NFResult[LispType] =>
+  fun apply(input: Array[MalType]): NFResult[MalType] =>
     if input.size() < 2 then
       return NFError("Requires at least two arguments")
     end
@@ -49,11 +49,11 @@ class PlusFunction is NativeFunction
     end
     let output = Iter[I64](arguments.values())
       .fold[I64](0, {(acc, x) => acc + x })
-    NFSuccess[LispType](consume output)
+    NFSuccess[MalType](consume output)
 
 class MinusFunction is NativeFunction
   fun name(): String => "-"
-  fun apply(input: Array[LispType]): NFResult[LispType] =>
+  fun apply(input: Array[MalType]): NFResult[MalType] =>
     if input.size() != 2 then
       return NFError("Requires two arguments")
     end
@@ -63,14 +63,14 @@ class MinusFunction is NativeFunction
     end
     try
       let output = arguments(0)? - arguments(1)?
-      NFSuccess[LispType](consume output)
+      NFSuccess[MalType](consume output)
     else
       return NFError("Can't happen")
     end
     
 class MultiplyFunction is NativeFunction
   fun name(): String => "*"
-  fun apply(input: Array[LispType]): NFResult[LispType] =>
+  fun apply(input: Array[MalType]): NFResult[MalType] =>
     if input.size() < 2 then
       return NFError("Requires at least two arguments")
     end
@@ -80,11 +80,11 @@ class MultiplyFunction is NativeFunction
     end
     let output = Iter[I64](arguments.values())
       .fold[I64](1, {(acc, x) => acc * x })
-    NFSuccess[LispType](consume output)
+    NFSuccess[MalType](consume output)
 
 class DivideFunction is NativeFunction
   fun name(): String => "/"
-  fun apply(input: Array[LispType]): NFResult[LispType] =>
+  fun apply(input: Array[MalType]): NFResult[MalType] =>
     if input.size() != 2 then
       return NFError("Requires two arguments")
     end
@@ -94,7 +94,7 @@ class DivideFunction is NativeFunction
     end
     try
       let output = arguments(0)? / arguments(1)?
-      NFSuccess[LispType](consume output)
+      NFSuccess[MalType](consume output)
     else
       return NFError("Can't divide")
     end

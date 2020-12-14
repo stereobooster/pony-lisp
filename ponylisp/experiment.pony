@@ -10,12 +10,12 @@
 
 // type Either[L, R] is (Left[L] | Right[R])
 
-// // interface Decoder[T: LispType]
+// // interface Decoder[T: MalType]
 // interface Decoder[T]
-//   fun ref decode(x: LispType): Either[String, T]
+//   fun ref decode(x: MalType): Either[String, T]
 
 // class DecoderI64 is Decoder[I64]
-//   fun ref decode(x: LispType): Either[String, I64] =>
+//   fun ref decode(x: MalType): Either[String, I64] =>
 //     match x
 //     | let y: I64 => Right[I64](y)
 //     else
@@ -26,7 +26,7 @@
 //   var _d: Decoder[I64]
 //   new create(d: Decoder[I64]) => 
 //     _d = d
-//   fun ref decode(x: Array[LispType]): Either[String, Array[I64]] =>
+//   fun ref decode(x: Array[MalType]): Either[String, Array[I64]] =>
 //     for v in x.values() do
 //       match _d.decode(v)
 //       | let l: Left[String] => return l
@@ -37,7 +37,7 @@
 // interface NativeFunction1[T]
 //   fun box name(): String
 //   fun box validate(arr: Array[T]): Either[String, Array[T]]
-//   fun box apply(arr: Array[T]): LispType ?
+//   fun box apply(arr: Array[T]): MalType ?
 
 // class PlusFunction1 is NativeFunction1[I64]
 //   fun box name(): String => "+"
@@ -45,7 +45,7 @@
 //   fun box validate(arr: Array[I64]): Either[String, Array[I64]] => 
 //     DecoderArray[I64](DecoderI64).decode(arr)
 
-//   fun box apply(arr: Array[I64]): LispType ? =>
+//   fun box apply(arr: Array[I64]): MalType ? =>
 //     if arr.size() < 2 then
 //       error
 //     end

@@ -9,21 +9,21 @@ We have 3 options on how to implement native functions
 Native function should provide `application` method:
 
 ```pony
-fun apply(arr: Array[LispType]): LispType ?
+fun apply(arr: Array[MalType]): MalType ?
 ```
 
 In this case each function will have to privde it's own validation. Othe way would be to provide exact types and implement validate method in the same class:
 
 ```pony
-fun validate(arr: Array[LispType]): Either<String, Array[I64]>
-fun apply(arr: Array[I64]): LispType ?
+fun validate(arr: Array[MalType]): Either<String, Array[I64]>
+fun apply(arr: Array[I64]): MalType ?
 ```
 
 One way or another we need a set of validators, for example
 
 ```pony
-fun validateI64(arr: Array[LispType]): Either<String, Array[I64]>
-fun validateLength(arr: Array[LispType], length: USize): Either<String, Array[LispType]>
+fun validateI64(arr: Array[MalType]): Either<String, Array[I64]>
+fun validateLength(arr: Array[MalType], length: USize): Either<String, Array[MalType]>
 ```
 
 It would be nice to implement composable validators, like in [`io-ts`](https://github.com/gcanti/io-ts/blob/master/Decoder.md), because otherwise we will have a lot of code repetition. But it is not possible, because recursive types are not allowed and I wasn't able to do some tricks with type restrictions either.
@@ -37,7 +37,7 @@ One potential way to solve it is to write small code generator (which will gener
 For now each native function should provide validation
 
 ```pony
-fun apply(arr: Array[LispType]): Either<String, LispType> ?
+fun apply(arr: Array[MalType]): Either<String, MalType> ?
 ```
 
 It would be nice to implement minimal set of validators, which will restrict to atomic types, like arrays of integers, floats, strings etc.

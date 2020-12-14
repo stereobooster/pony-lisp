@@ -3,8 +3,8 @@ use "collections"
 use "debug"
 use "json"
 
-// There seems to ba a bug in Pony type checker - it doesn't allow me to use AstType here
-// instead it forces me to use LispType
+// There seems to ba a bug in Pony type checker - it doesn't allow me to use MalAst here
+// instead it forces me to use MalType
 
 class Token
   let content: String
@@ -63,21 +63,21 @@ class Reader
     _float_r = Regex("^-?[0-9][0-9.]*$")?
     _string_r = Regex(""""(?:[\\].|[^\\"])*"""")?
 
-  fun debug_val(value: LispType) =>
+  fun debug_val(value: MalType) =>
     match value
     | None => Debug(None)
     | let x: Bool => Debug(x)
     | let x: I64 => Debug(x)
     | let x: F64 => Debug(x)
     | let x: String => Debug("String"); Debug(x)
-    | let x: ListType => Debug("ListType")
-    | let x: VectorType => Debug("VectorType")
-    | let x: MapType => Debug("MapType")
-    | let x: Symbol => Debug("Symbol"); Debug(x.value)
-    | let x: Keyword => Debug("Keyword"); Debug(x.value)
+    | let x: MalList => Debug("MalList")
+    | let x: MalVector => Debug("MalVector")
+    | let x: MalMap => Debug("MalMap")
+    | let x: MalSymbol => Debug("MalSymbol"); Debug(x.value)
+    | let x: MalKeyword => Debug("MalKeyword"); Debug(x.value)
     end
 
-  fun read_atom(stream: TokenStream): Atom ? =>
+  fun read_atom(stream: TokenStream): MalAtom ? =>
     let token = stream.next()?
 
     match token
@@ -102,14 +102,14 @@ class Reader
         error
       // "\u029e" is ʞ, not sure why MAL chose to do it this way
       // | ':' => ";\u029e" + token.cut(0, 1)
-      | ':' => Keyword(token)
+      | ':' => MalKeyword(token)
       else
-        Symbol(token)
+        MalSymbol(token)
       end
     end
 
-  fun read_sequence(stream: TokenStream, start: String, finish: String): Array[LispType] ? =>
-    let list: Array[LispType] = []
+  fun read_sequence(stream: TokenStream, start: String, finish: String): Array[MalType] ? =>
+    let list: Array[MalType] = []
     var token = stream.next()?
     if token != start then
       Debug("expected '" + start + "'")
@@ -127,50 +127,50 @@ class Reader
     stream.next()?
     list
 
-  fun read_list(stream: TokenStream): ListType ? =>
-    ListType(read_sequence(stream, "(", ")")?)
+  fun read_list(stream: TokenStream): MalList ? =>
+    MalList(read_sequence(stream, "(", ")")?)
 
-  fun read_vector(stream: TokenStream): VectorType ? =>
-    VectorType(read_sequence(stream, "[", "]")?)
+  fun read_vector(stream: TokenStream): MalVector ? =>
+    MalVector(read_sequence(stream, "[", "]")?)
 
-  fun read_hash_map(stream: TokenStream): MapType ? =>
+  fun read_hash_map(stream: TokenStream): MalMap ? =>
     let list = read_sequence(stream, "{", "}")?
     if (list.size() %% 2) == 1 then
       Debug("odd number of hash map arguments")
       error
     end
-    let hash = Map[String, LispType](list.size()/2)
+    let hash = Map[String, MalType](list.size()/2)
     var i: USize = 0
     while i < list.size() do
       match list(i)?
       | let key: String => hash(key) = list(i+1)?
-      // | let key: Symbol => hash(key.value) = list(i+1)?
+      // | let key: MalSymbol => hash(key.value) = list(i+1)?
       else
         Debug("key not a string")
         error
       end
       i = i + 2
     end
-    MapType(hash)
+    MalMap(hash)
 
-  fun read_form(stream: TokenStream): LispType ? =>
+  fun read_form(stream: TokenStream): MalType ? =>
     let token = stream.peek()?
     match token
     // stream macros/transforms
     | ";" => None
     | "\"" => stream.next()?
-      return ListType([Symbol("quote"); read_form(stream)?])
+      return MalList([MalSymbol("quote"); read_form(stream)?])
     | "`" => stream.next()?
-      return ListType([Symbol("quasiquote"); read_form(stream)?])
+      return MalList([MalSymbol("quasiquote"); read_form(stream)?])
     | "~" => stream.next()?
-      return ListType([Symbol("unquote"); read_form(stream)?])
+      return MalList([MalSymbol("unquote"); read_form(stream)?])
     | "~@" => stream.next()?
-      return ListType([Symbol("splice-unquote"); read_form(stream)?])
+      return MalList([MalSymbol("splice-unquote"); read_form(stream)?])
     | "^" => stream.next()?
         let meta = read_form(stream)?
-        return ListType([Symbol("with-meta"); read_form(stream)?; meta])
+        return MalList([MalSymbol("with-meta"); read_form(stream)?; meta])
     | "@" => stream.next()?
-        return ListType([Symbol("deref"); read_form(stream)?])
+        return MalList([MalSymbol("deref"); read_form(stream)?])
 
     // list
     | ")" => 
@@ -194,7 +194,7 @@ class Reader
       read_atom(stream)?
     end
 
-  fun read_str(str: String): LispType ? =>
+  fun read_str(str: String): MalType ? =>
     let tokens = Tokenizer.tokenize(str)?
     if tokens.size() == 0 then
       Debug("empty input")

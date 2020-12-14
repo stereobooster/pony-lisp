@@ -4,8 +4,8 @@ use "promises"
 use "collections"
 
 class DefaultListEnv
-  fun calc(): LispEnv =>
-    let env = LispEnv()
+  fun calc(): MalEnv =>
+    let env = MalEnv()
     env.set("+", PlusFunction)
     env.set("-", MinusFunction)
     env.set("*", MultiplyFunction)
@@ -15,7 +15,7 @@ class DefaultListEnv
 // https://github.com/ponylang/ponyc/blob/master/examples/readline/main.pony
 class Handler is ReadlineNotify
   let out: OutStream
-  let _lisp_env: LispEnv
+  let _lisp_env: MalEnv
   
   new iso create(out': OutStream) =>
     out = out'
@@ -31,7 +31,7 @@ class Handler is ReadlineNotify
 
   fun ref tab(line: String): Seq[String] box => Array[String]
 
-  fun read(str: String): LispType => 
+  fun read(str: String): MalType => 
     try
       let reader = Reader.create()?
       reader.read_str(str)?
@@ -40,9 +40,9 @@ class Handler is ReadlineNotify
       None
     end
   
-  fun eval_def(a: LispType, b: LispType, lisp_env: LispEnv): LispType ? => 
+  fun eval_def(a: MalType, b: MalType, lisp_env: MalEnv): MalType ? => 
     match a
-      | let x: Symbol => 
+      | let x: MalSymbol => 
         let result = eval(b, lisp_env)
         lisp_env.set(x.value, result)
         // we need explicit return result, because Pony returns previos version of value on assignment
@@ -52,7 +52,7 @@ class Handler is ReadlineNotify
         error
       end
 
-  fun eval_application(x: ListType, lisp_env: LispEnv): LispType => 
+  fun eval_application(x: MalList, lisp_env: MalEnv): MalType => 
     if x.value.size() != 3 then
       Debug("Only functions with two arguments supported")
       None
@@ -62,7 +62,7 @@ class Handler is ReadlineNotify
       Debug("Application")
       // This is anoying - need to introduce Maybe/Either
       let operator = match x.value(0)?
-        | let y: Symbol => y
+        | let y: MalSymbol => y
         else
           Debug("Expected symbol")
           error
@@ -71,9 +71,9 @@ class Handler is ReadlineNotify
       | "def!" => 
         return eval_def(x.value(1)?, x.value(2)?, lisp_env)?
       | "let*" => 
-        let new_lisp_env = LispEnv(lisp_env)
+        let new_lisp_env = MalEnv(lisp_env)
         match x.value(1)?
-        | let y: ListType => 
+        | let y: MalList => 
           eval_def(y.value(0)?, y.value(1)?, new_lisp_env)?
           return eval(x.value(2)?, new_lisp_env)
         else
@@ -83,7 +83,7 @@ class Handler is ReadlineNotify
       end
     end
 
-    let temp: Array[LispType] = []
+    let temp: Array[MalType] = []
     for v in x.value.values() do
       temp.push(eval(v, lisp_env))
     end
@@ -95,45 +95,47 @@ class Handler is ReadlineNotify
           Debug("Expected function")
           error
         end
-        fn.apply(temp.slice(1))()
+        match fn.apply(temp.slice(1))
+        | let e: NFError => out.print("Error: " + e()) 
+        | let a: NFSuccess[MalType] => a()
+        end
       else
         None
       end
 
-  fun eval(ast: LispType, lisp_env: LispEnv): LispType => 
+  fun eval(ast: MalType, lisp_env: MalEnv): MalType => 
     match ast
     | None => None
     | let x: Bool => x
     | let x: I64 => x
     | let x: F64 => x
     | let x: String => x
-    | let x: Keyword => x
-    | let x: VectorType => 
-      let temp: Array[LispType] = []
+    | let x: MalKeyword => x
+    | let x: MalVector => 
+      let temp: Array[MalType] = []
       for v in x.value.values() do
         temp.push(eval(v, lisp_env))
       end
-      VectorType(temp)
-    | let x: MapType => 
-      let temp = Map[String, LispType](x.value.size())
+      MalVector(temp)
+    | let x: MalMap => 
+      let temp = Map[String, MalType](x.value.size())
       for (k, v) in x.value.pairs() do
         temp(k) = eval(v, lisp_env)
       end
-      MapType(temp)
-    | let x: ListType => 
-        eval_application(x, lisp_env)
-    | let x: Symbol => 
+      MalMap(temp)
+    | let x: MalList => eval_application(x, lisp_env)
+    | let x: MalSymbol => 
       try
         lisp_env.get(x.value)?
       else
-        Debug("Variable not found " + x.value)
+        out.print("Error: Variable not found " + x.value)
         None
       end
     | let x: NativeFunction => 
       x
     end
 
-  fun print(exp: LispType): String => 
+  fun print(exp: MalType): String => 
     Printer.print_str(exp)
 
   fun ref rep (str: String): String => 

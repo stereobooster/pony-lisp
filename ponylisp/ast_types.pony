@@ -2,73 +2,66 @@ use "debug"
 use "collections"
 
 // TODO: AstNode which will contain position, so it would be easier to report parse errors
-type Atom is (I64 | F64 | String | None | Bool | Symbol | Keyword)
-type AstType is (Atom | MapType | ListType | VectorType | ListTypeStrict[Atom])
+type MalAtom is (I64 | F64 | String | None | Bool | MalSymbol | MalKeyword)
+type MalAst is (MalAtom | MalMap | MalList | MalVector)
+type MalType is (MalAst | NativeFunction)
+type MalEnvData is (Map[String, MalType])
 
-type LispType is (AstType | NativeFunction)
-type LispEnvData is (Map[String, LispType])
+class MalEnv
+  let _data: MalEnvData
+  let _outer: (MalEnv | None)
 
-class LispEnv
-  let _data: LispEnvData
-  let _outer: (LispEnv | None)
-
-  new create(outer: (LispEnv | None) = None, data: LispEnvData = LispEnvData(0)) =>
+  new create(outer: (MalEnv | None) = None, data: MalEnvData = MalEnvData(0)) =>
     _data = data
     _outer = outer
 
-  fun ref get(key: String): LispType ? => 
+  fun ref get(key: String): MalType ? => 
     if _data.contains(key) then
       return _data(key)?
     end
     match _outer
     | None => error
-    | let x: LispEnv => x.get(key)?
+    | let x: MalEnv => x.get(key)?
     end
 
-  fun ref set(key: String, value: LispType) => 
+  fun ref set(key: String, value: MalType) => 
     _data(key) = value
 
-  fun ref find(key: String): (LispEnv | None) =>
+  fun ref find(key: String): (MalEnv | None) =>
     if _data.contains(key) then
       return this
     end
     match _outer
     | None => None
-    | let x: LispEnv => x.find(key)
+    | let x: MalEnv => x.find(key)
     end
 
-class Symbol // is Stringable
+class MalSymbol // is Stringable
   let value: String
   new create(value': String) =>
     value = value'
-  // fun eq(that: box->Symbol): Bool =>
+  // fun eq(that: box->MalSymbol): Bool =>
   //   this.value == that.value
 
-class Keyword
+class MalKeyword
   let value: String
   new create(value': String) =>
     value = value'
 
 // we need those classes because Pony doesn't support recursive types
-class ListType
-  let value: Array[LispType]
-  new create(value': Array[LispType]) =>
+class MalList
+  let value: Array[MalType]
+  new create(value': Array[MalType]) =>
     value = value'
-  fun ref getValue(): Array[LispType] => value
+  fun ref getValue(): Array[MalType] => value
 
-class ListTypeStrict[T: LispType]
-  let value: Array[T]
-  new create(value': Array[T]) =>
+class MalVector
+  let value: Array[MalType]
+  new create(value': Array[MalType]) =>
     value = value'
-  fun ref getValue(): Array[T] => value
+  fun ref getValue(): Array[MalType] => value
 
-class VectorType
-  let value: Array[LispType]
-  new create(value': Array[LispType]) =>
-    value = value'
-  fun ref getValue(): Array[LispType] => value
-
-class  MapType
-  let value: Map[String, LispType]
-  new create(value': Map[String, LispType]) =>
+class  MalMap
+  let value: Map[String, MalType]
+  new create(value': Map[String, MalType]) =>
     value = value'

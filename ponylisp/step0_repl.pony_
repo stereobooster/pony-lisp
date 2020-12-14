@@ -2,7 +2,7 @@ use "term"
 use "promises"
 use "collections"
 
-type LispEnv is (Map[String, String])
+type MalEnv is (Map[String, String])
 
 // https://github.com/ponylang/ponyc/blob/master/examples/readline/main.pony
 class Handler is ReadlineNotify
@@ -18,14 +18,14 @@ class Handler is ReadlineNotify
 
   fun ref tab(line: String): Seq[String] box => Array[String]
 
-  fun read(str: String): AstType => None
+  fun read(str: String): MalAst => None
   
-  fun eval(ast: AstType, lisp_env: LispEnv): AstType => ast
+  fun eval(ast: MalAst, lisp_env: MalEnv): MalAst => ast
 
-  fun print(exp: AstType): String => ""
+  fun print(exp: MalAst): String => ""
 
   fun rep (str: String): String => 
-    print(eval(read(str), LispEnv()))
+    print(eval(read(str), MalEnv()))
 
 actor Main
   new create(env: Env) =>

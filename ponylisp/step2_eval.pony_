@@ -4,8 +4,8 @@ use "collections"
 use "debug"
 
 class DefaultListEnv
-  fun calc(): LispEnv =>
-    let env = LispEnv(4)
+  fun calc(): MalEnv =>
+    let env = MalEnv(4)
     env("+") = {(a: I64, b: I64): I64 => a + b}
     env("-") = {(a: I64, b: I64): I64 => a - b}
     env("*") = {(a: I64, b: I64): I64 => a * b}
@@ -29,7 +29,7 @@ class Handler is ReadlineNotify
 
   fun ref tab(line: String): Seq[String] box => Array[String]
 
-  fun read(str: String): LispType => 
+  fun read(str: String): MalType => 
     try
       let reader = Reader.create()?
       reader.read_str(str)?
@@ -38,32 +38,32 @@ class Handler is ReadlineNotify
       None
     end
   
-  fun eval(ast: LispType, lisp_env: LispEnv): LispType => 
+  fun eval(ast: MalType, lisp_env: MalEnv): MalType => 
     match ast
     | None => None
     | let x: Bool => x
     | let x: I64 => x
     | let x: F64 => x
     | let x: String => x
-    | let x: Keyword => x
-    | let x: VectorType => 
-      let temp: Array[LispType] = []
+    | let x: MalKeyword => x
+    | let x: MalVector => 
+      let temp: Array[MalType] = []
       for v in x.value.values() do
         temp.push(eval(v, lisp_env))
       end
-      VectorType(temp)
-    | let x: MapType => 
-      let temp = Map[String, LispType](x.value.size())
+      MalVector(temp)
+    | let x: MalMap => 
+      let temp = Map[String, MalType](x.value.size())
       for (k, v) in x.value.pairs() do
         temp(k) = eval(v, lisp_env)
       end
-      MapType(temp)
-    | let x: ListType => 
+      MalMap(temp)
+    | let x: MalList => 
       if x.value.size() != 3 then
         Debug("Only functions with two arguments supported")
         None
       end
-      let temp: Array[LispType] = []
+      let temp: Array[MalType] = []
       for v in x.value.values() do
         temp.push(eval(v, lisp_env))
       end
@@ -92,8 +92,8 @@ class Handler is ReadlineNotify
         else
           None
         end
-      // ListType(temp)
-    | let x: Symbol => 
+      // MalList(temp)
+    | let x: MalSymbol => 
       try
         lisp_env(x.value)?
       else
@@ -104,7 +104,7 @@ class Handler is ReadlineNotify
       x
     end
 
-  fun print(exp: LispType): String => 
+  fun print(exp: MalType): String => 
     Printer.print_str(exp)
 
   fun rep (str: String): String => 
