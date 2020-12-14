@@ -27,6 +27,17 @@ primitive DecodeArray
       end
     end
     NFSuccess[Array[I64]](output)
+  
+  fun symbol(input: Array[MalType]): NFResult[Array[MalSymbol]] =>
+    let output = Array[MalSymbol](input.size())
+    for v in input.values() do
+      match v
+      | let t: MalSymbol => output.push(t)
+      else
+        return NFError("Not a symbol array")
+      end
+    end
+    NFSuccess[Array[MalSymbol]](output)
 
 interface NativeFunction
   // it can provide documentation or type signature

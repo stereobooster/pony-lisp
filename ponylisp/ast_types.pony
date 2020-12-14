@@ -4,9 +4,9 @@ use "collections"
 // TODO: AstNode which will contain position, so it would be easier to report parse errors
 type MalAtom is (I64 | F64 | String | None | Bool | MalSymbol | MalKeyword)
 type MalAst is (MalAtom | MalMap | MalList | MalVector)
-type MalType is (MalAst | NativeFunction)
-type MalEnvData is (Map[String, MalType])
+type MalType is (MalAst | NativeFunction | MalLambda)
 
+type MalEnvData is (Map[String, MalType])
 class MalEnv
   let _data: MalEnvData
   let _outer: (MalEnv | None)
@@ -65,3 +65,12 @@ class  MalMap
   let value: Map[String, MalType]
   new create(value': Map[String, MalType]) =>
     value = value'
+
+class  MalLambda
+  let arguments: Array[MalSymbol]
+  let body: MalType
+  let lisp_env: MalEnv
+  new create(arguments': Array[MalSymbol], body': MalType, lisp_env': MalEnv) =>
+    arguments = arguments'
+    body = body'
+    lisp_env = lisp_env'

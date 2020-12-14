@@ -141,7 +141,9 @@ primitive Printer
     | let x: MalKeyword => 
       buf.append(x.value)
     | let x: NativeFunction => 
-      buf.append("Native function: " + x.name())
+      buf.append("#<native function: " + x.name() + ">")
+    | let x: MalLambda => 
+      buf.append("#<function>")
     end
 
     buf
