@@ -19,7 +19,7 @@ primitive Printer
  
     buf
 
-  fun _string_map(data: Map[String, AstTypeAndNativeFunction], buf': String iso, indent: String, level: USize, pretty: Bool)
+  fun _string_map(data: Map[String, LispType], buf': String iso, indent: String, level: USize, pretty: Bool)
     : String iso^
   =>
     """
@@ -60,7 +60,7 @@ primitive Printer
     buf
 
   fun _string_array(
-    data: Array[AstTypeAndNativeFunction],
+    data: Array[LispType],
     buf': String iso,
     indent: String,
     level: USize,
@@ -106,7 +106,7 @@ primitive Printer
     buf
   
   fun _string(
-    value: AstTypeAndNativeFunction,
+    value: LispType,
     buf': String iso,
     indent: String,
     level: USize,
@@ -141,7 +141,7 @@ primitive Printer
     | let x: Keyword => 
       buf.append(x.value)
     | let x: NativeFunction => 
-      buf.append("NativeFunction")
+      buf.append("Native function: " + x.name())
     end
 
     buf
@@ -195,6 +195,6 @@ primitive Printer
     buf.push('"')
     buf
 
-  fun print_str(value: AstTypeAndNativeFunction, readable: Bool = false): String iso^ => 
+  fun print_str(value: LispType, readable: Bool = false): String iso^ => 
     _string(value, recover String(256) end, "", 0, readable)
     

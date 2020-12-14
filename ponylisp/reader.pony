@@ -4,7 +4,7 @@ use "debug"
 use "json"
 
 // There seems to ba a bug in Pony type checker - it doesn't allow me to use AstType here
-// instead it forces me to use AstTypeAndNativeFunction
+// instead it forces me to use LispType
 
 class Token
   let content: String
@@ -63,7 +63,7 @@ class Reader
     _float_r = Regex("^-?[0-9][0-9.]*$")?
     _string_r = Regex(""""(?:[\\].|[^\\"])*"""")?
 
-  fun debug_val(value: AstTypeAndNativeFunction) =>
+  fun debug_val(value: LispType) =>
     match value
     | None => Debug(None)
     | let x: Bool => Debug(x)
@@ -108,8 +108,8 @@ class Reader
       end
     end
 
-  fun read_sequence(stream: TokenStream, start: String, finish: String): Array[AstTypeAndNativeFunction] ? =>
-    let list: Array[AstTypeAndNativeFunction] = []
+  fun read_sequence(stream: TokenStream, start: String, finish: String): Array[LispType] ? =>
+    let list: Array[LispType] = []
     var token = stream.next()?
     if token != start then
       Debug("expected '" + start + "'")
@@ -139,7 +139,7 @@ class Reader
       Debug("odd number of hash map arguments")
       error
     end
-    let hash = Map[String, AstTypeAndNativeFunction](list.size()/2)
+    let hash = Map[String, LispType](list.size()/2)
     var i: USize = 0
     while i < list.size() do
       match list(i)?
@@ -153,7 +153,7 @@ class Reader
     end
     MapType(hash)
 
-  fun read_form(stream: TokenStream): AstTypeAndNativeFunction ? =>
+  fun read_form(stream: TokenStream): LispType ? =>
     let token = stream.peek()?
     match token
     // stream macros/transforms
@@ -194,7 +194,7 @@ class Reader
       read_atom(stream)?
     end
 
-  fun read_str(str: String): AstTypeAndNativeFunction ? =>
+  fun read_str(str: String): LispType ? =>
     let tokens = Tokenizer.tokenize(str)?
     if tokens.size() == 0 then
       Debug("empty input")

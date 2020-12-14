@@ -6,10 +6,10 @@ use "collections"
 class DefaultListEnv
   fun calc(): LispEnv =>
     let env = LispEnv()
-    env.set("+", {(a: I64, b: I64): I64 => a + b})
-    env.set("-", {(a: I64, b: I64): I64 => a - b})
-    env.set("*", {(a: I64, b: I64): I64 => a * b})
-    env.set("/", {(a: I64, b: I64): I64 => a / b})
+    env.set("+", PlusFunction)
+    env.set("-", MinusFunction)
+    env.set("*", MultiplyFunction)
+    env.set("/", DivideFunction)
     env
 
 // https://github.com/ponylang/ponyc/blob/master/examples/readline/main.pony
@@ -31,7 +31,7 @@ class Handler is ReadlineNotify
 
   fun ref tab(line: String): Seq[String] box => Array[String]
 
-  fun read(str: String): AstTypeAndNativeFunction => 
+  fun read(str: String): LispType => 
     try
       let reader = Reader.create()?
       reader.read_str(str)?
@@ -40,7 +40,7 @@ class Handler is ReadlineNotify
       None
     end
   
-  fun eval_def(a: AstTypeAndNativeFunction, b: AstTypeAndNativeFunction, lisp_env: LispEnv): AstTypeAndNativeFunction ? => 
+  fun eval_def(a: LispType, b: LispType, lisp_env: LispEnv): LispType ? => 
     match a
       | let x: Symbol => 
         let result = eval(b, lisp_env)
@@ -52,7 +52,7 @@ class Handler is ReadlineNotify
         error
       end
 
-  fun eval_application(x: ListType, lisp_env: LispEnv): AstTypeAndNativeFunction => 
+  fun eval_application(x: ListType, lisp_env: LispEnv): LispType => 
     if x.value.size() != 3 then
       Debug("Only functions with two arguments supported")
       None
@@ -83,7 +83,7 @@ class Handler is ReadlineNotify
       end
     end
 
-    let temp: Array[AstTypeAndNativeFunction] = []
+    let temp: Array[LispType] = []
     for v in x.value.values() do
       temp.push(eval(v, lisp_env))
     end
@@ -95,24 +95,12 @@ class Handler is ReadlineNotify
           Debug("Expected function")
           error
         end
-      let a = match temp(1)? 
-        | let y: I64 => y
-        else
-          Debug("Expected number as first agument")
-          error
-        end
-      let b = match temp(2)? 
-        | let y: I64 => y
-        else
-          Debug("Expected number as second agument")
-          error
-        end
-        fn.apply(a, b)
+        fn.apply(temp.slice(1))()
       else
         None
       end
 
-  fun eval(ast: AstTypeAndNativeFunction, lisp_env: LispEnv): AstTypeAndNativeFunction => 
+  fun eval(ast: LispType, lisp_env: LispEnv): LispType => 
     match ast
     | None => None
     | let x: Bool => x
@@ -121,13 +109,13 @@ class Handler is ReadlineNotify
     | let x: String => x
     | let x: Keyword => x
     | let x: VectorType => 
-      let temp: Array[AstTypeAndNativeFunction] = []
+      let temp: Array[LispType] = []
       for v in x.value.values() do
         temp.push(eval(v, lisp_env))
       end
       VectorType(temp)
     | let x: MapType => 
-      let temp = Map[String, AstTypeAndNativeFunction](x.value.size())
+      let temp = Map[String, LispType](x.value.size())
       for (k, v) in x.value.pairs() do
         temp(k) = eval(v, lisp_env)
       end
@@ -145,7 +133,7 @@ class Handler is ReadlineNotify
       x
     end
 
-  fun print(exp: AstTypeAndNativeFunction): String => 
+  fun print(exp: LispType): String => 
     Printer.print_str(exp)
 
   fun ref rep (str: String): String => 
