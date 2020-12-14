@@ -2,6 +2,8 @@ use "debug"
 use "collections"
 
 // TODO: AstNode which will contain position, so it would be easier to report parse errors
+// it is possible to confuse None or String from pony with values from Lisp,
+// it would be more explicit if we provide wrappers fow all values, lik MalNone, MalString etc.
 type MalAtom is (I64 | F64 | String | None | Bool | MalSymbol | MalKeyword)
 type MalAst is (MalAtom | MalMap | MalList | MalVector)
 type MalType is (MalAst | NativeFunction | MalLambda)

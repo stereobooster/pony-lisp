@@ -3,7 +3,7 @@ use "term"
 use "promises"
 use "collections"
 
-class DefaultListEnv
+class DefaultMalEnv
   fun calc(): MalEnv =>
     let env = MalEnv()
     env.set("+", PlusFunction)
@@ -19,7 +19,7 @@ class Handler is ReadlineNotify
   
   new iso create(out': OutStream) =>
     out = out'
-    _lisp_env = DefaultListEnv.calc()
+    _lisp_env = DefaultMalEnv.calc()
 
   fun ref apply(line: String, prompt: Promise[String]) =>
     try

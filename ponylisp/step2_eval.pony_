@@ -3,7 +3,7 @@ use "promises"
 use "collections"
 use "debug"
 
-class DefaultListEnv
+class DefaultMalEnv
   fun calc(): MalEnv =>
     let env = MalEnv(4)
     env("+") = {(a: I64, b: I64): I64 => a + b}
@@ -108,7 +108,7 @@ class Handler is ReadlineNotify
     Printer.print_str(exp)
 
   fun rep (str: String): String => 
-    print(eval(read(str), DefaultListEnv.calc()))
+    print(eval(read(str), DefaultMalEnv.calc()))
 
 actor Main
   new create(env: Env) =>

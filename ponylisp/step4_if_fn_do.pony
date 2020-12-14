@@ -3,15 +3,6 @@ use "term"
 use "promises"
 use "collections"
 
-class DefaultListEnv
-  fun calc(): MalEnv =>
-    let env = MalEnv()
-    env.set("+", PlusFunction)
-    env.set("-", MinusFunction)
-    env.set("*", MultiplyFunction)
-    env.set("/", DivideFunction)
-    env
-
 // https://github.com/ponylang/ponyc/blob/master/examples/readline/main.pony
 class Handler is ReadlineNotify
   let out: OutStream
@@ -19,32 +10,21 @@ class Handler is ReadlineNotify
   
   new iso create(out': OutStream) =>
     out = out'
-    _lisp_env = DefaultListEnv.calc()
+    _lisp_env = DefaultMalEnv.calc()
+    rep("(def! not (fn* (a) (if a false true)))")
 
   fun ref apply(line: String, prompt: Promise[String]) =>
-    try
-      Tokenizer.tokenize(line)?
-    end
     out.print(rep(line))
     // can't use "\n" here
     prompt("user>")
 
   fun ref tab(line: String): Seq[String] box => Array[String]
 
-  fun read(str: String): MalType => 
-    try
-      let reader = Reader.create()?
-      reader.read_str(str)?
-    else
-      Debug("Read error")
-      None
-    end
-  
   fun eval_def_bang(name: MalType, value: MalType, lisp_env: MalEnv): MalType ? => 
     match name
       | let name': MalSymbol => 
         let value_evaluated = eval(value, lisp_env)
-        lisp_env.set(name'.value, value)
+        lisp_env.set(name'.value, value_evaluated)
         // we need explicit return result, because Pony returns previos version of value on assignment
         value_evaluated
       else
@@ -54,11 +34,12 @@ class Handler is ReadlineNotify
 
   fun eval_application(x: MalList, lisp_env: MalEnv): MalType => 
     if x.value.size() < 3 then
-      Debug("Only functions with two arguments supported")
-      None
+      Debug("Only functions with two or more arguments supported")
+      return
     end
 
     try
+      // TODO: http://www.lispworks.com/documentation/HyperSpec/Body/03_ababa.htm
       Debug("Application")
       // This is anoying - need to introduce Maybe/Either
       let operator = match x.value(0)?
@@ -106,6 +87,7 @@ class Handler is ReadlineNotify
           out.print("Error: Expected list as second argument") 
           return
         end
+        // TODO: check uniqueness
         match DecodeArray.symbol(arguments.getValue())
         | let e: NFError => 
           out.print("Error: " + e())
@@ -140,6 +122,14 @@ class Handler is ReadlineNotify
       end
     end
 
+  fun read(str: String): MalType => 
+    try
+      let reader = Reader.create()?
+      reader.read_str(str)?
+    else
+      Debug("Read error")
+    end
+  
   fun eval(ast: MalType, lisp_env: MalEnv): MalType => 
     match ast
     | None => None
