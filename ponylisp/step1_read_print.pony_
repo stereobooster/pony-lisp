@@ -31,7 +31,7 @@ class Handler is ReadlineNotify
       None
     end
   
-  fun eval(ast: MalAst, lisp_env: MalEnv): MalAst => ast
+  fun eval(ast: MalAst, mal_env: MalEnv): MalAst => ast
 
   fun print(exp: MalAst): String => 
     Printer.print_str(exp)

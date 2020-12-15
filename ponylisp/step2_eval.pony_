@@ -38,7 +38,7 @@ class Handler is ReadlineNotify
       None
     end
   
-  fun eval(ast: MalType, lisp_env: MalEnv): MalType => 
+  fun eval(ast: MalType, mal_env: MalEnv): MalType => 
     match ast
     | None => None
     | let x: Bool => x
@@ -49,13 +49,13 @@ class Handler is ReadlineNotify
     | let x: MalVector => 
       let temp: Array[MalType] = []
       for v in x.value.values() do
-        temp.push(eval(v, lisp_env))
+        temp.push(eval(v, mal_env))
       end
       MalVector(temp)
     | let x: MalMap => 
       let temp = Map[String, MalType](x.value.size())
       for (k, v) in x.value.pairs() do
-        temp(k) = eval(v, lisp_env)
+        temp(k) = eval(v, mal_env)
       end
       MalMap(temp)
     | let x: MalList => 
@@ -65,7 +65,7 @@ class Handler is ReadlineNotify
       end
       let temp: Array[MalType] = []
       for v in x.value.values() do
-        temp.push(eval(v, lisp_env))
+        temp.push(eval(v, mal_env))
       end
       try
         Debug("Application")
@@ -95,7 +95,7 @@ class Handler is ReadlineNotify
       // MalList(temp)
     | let x: MalSymbol => 
       try
-        lisp_env(x.value)?
+        mal_env(x.value)?
       else
         Debug("Variable not found " + x.value)
         None

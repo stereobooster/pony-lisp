@@ -40,11 +40,11 @@ class Handler is ReadlineNotify
       None
     end
   
-  fun eval_def(a: MalType, b: MalType, lisp_env: MalEnv): MalType ? => 
+  fun eval_def(a: MalType, b: MalType, mal_env: MalEnv): MalType ? => 
     match a
       | let x: MalSymbol => 
-        let result = eval(b, lisp_env)
-        lisp_env.set(x.value, result)
+        let result = eval(b, mal_env)
+        mal_env.set(x.value, result)
         // we need explicit return result, because Pony returns previos version of value on assignment
         result
       else
@@ -52,7 +52,7 @@ class Handler is ReadlineNotify
         error
       end
 
-  fun eval_application(x: MalList, lisp_env: MalEnv): MalType => 
+  fun eval_application(x: MalList, mal_env: MalEnv): MalType => 
     if x.value.size() != 3 then
       Debug("Only functions with two arguments supported")
       None
@@ -69,9 +69,9 @@ class Handler is ReadlineNotify
         end
       match operator.value
       | "def!" => 
-        return eval_def(x.value(1)?, x.value(2)?, lisp_env)?
+        return eval_def(x.value(1)?, x.value(2)?, mal_env)?
       | "let*" => 
-        let new_lisp_env = MalEnv(lisp_env)
+        let new_lisp_env = MalEnv(mal_env)
         match x.value(1)?
         | let y: MalList => 
           eval_def(y.value(0)?, y.value(1)?, new_lisp_env)?
@@ -85,7 +85,7 @@ class Handler is ReadlineNotify
 
     let temp: Array[MalType] = []
     for v in x.value.values() do
-      temp.push(eval(v, lisp_env))
+      temp.push(eval(v, mal_env))
     end
     try
       Debug("Native function application")
@@ -103,7 +103,7 @@ class Handler is ReadlineNotify
         None
       end
 
-  fun eval(ast: MalType, lisp_env: MalEnv): MalType => 
+  fun eval(ast: MalType, mal_env: MalEnv): MalType => 
     match ast
     | None => None
     | let x: Bool => x
@@ -114,19 +114,19 @@ class Handler is ReadlineNotify
     | let x: MalVector => 
       let temp: Array[MalType] = []
       for v in x.value.values() do
-        temp.push(eval(v, lisp_env))
+        temp.push(eval(v, mal_env))
       end
       MalVector(temp)
     | let x: MalMap => 
       let temp = Map[String, MalType](x.value.size())
       for (k, v) in x.value.pairs() do
-        temp(k) = eval(v, lisp_env)
+        temp(k) = eval(v, mal_env)
       end
       MalMap(temp)
-    | let x: MalList => eval_application(x, lisp_env)
+    | let x: MalList => eval_application(x, mal_env)
     | let x: MalSymbol => 
       try
-        lisp_env.get(x.value)?
+        mal_env.get(x.value)?
       else
         out.print("Error: Variable not found " + x.value)
         None

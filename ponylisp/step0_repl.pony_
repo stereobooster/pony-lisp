@@ -20,7 +20,7 @@ class Handler is ReadlineNotify
 
   fun read(str: String): MalAst => None
   
-  fun eval(ast: MalAst, lisp_env: MalEnv): MalAst => ast
+  fun eval(ast: MalAst, mal_env: MalEnv): MalAst => ast
 
   fun print(exp: MalAst): String => ""
 

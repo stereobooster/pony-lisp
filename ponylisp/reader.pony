@@ -63,20 +63,6 @@ class Reader
     _float_r = Regex("^-?[0-9][0-9.]*$")?
     _string_r = Regex(""""(?:[\\].|[^\\"])*"""")?
 
-  fun debug_val(value: MalType) =>
-    match value
-    | None => Debug(None)
-    | let x: Bool => Debug(x)
-    | let x: I64 => Debug(x)
-    | let x: F64 => Debug(x)
-    | let x: String => Debug("String"); Debug(x)
-    | let x: MalList => Debug("MalList")
-    | let x: MalVector => Debug("MalVector")
-    | let x: MalMap => Debug("MalMap")
-    | let x: MalSymbol => Debug("MalSymbol"); Debug(x.value)
-    | let x: MalKeyword => Debug("MalKeyword"); Debug(x.value)
-    end
-
   fun read_atom(stream: TokenStream): MalAtom ? =>
     let token = stream.next()?
 

@@ -142,6 +142,8 @@ primitive Printer
       buf.append(x.value)
     | let x: NativeFunction => 
       buf.append("#<native function: " + x.name() + ">")
+    | let x: SpecialForm => 
+      buf.append("#<special form: " + x.name() + ">")
     | let x: MalLambda => 
       buf.append("#<function>")
     end

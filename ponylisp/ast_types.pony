@@ -6,7 +6,7 @@ use "collections"
 // it would be more explicit if we provide wrappers fow all values, lik MalNone, MalString etc.
 type MalAtom is (I64 | F64 | String | None | Bool | MalSymbol | MalKeyword)
 type MalAst is (MalAtom | MalMap | MalList | MalVector)
-type MalType is (MalAst | NativeFunction | MalLambda)
+type MalType is (MalAst | NativeFunction | MalLambda | SpecialForm)
 
 type MalEnvData is (Map[String, MalType])
 class MalEnv
@@ -71,8 +71,8 @@ class  MalMap
 class  MalLambda
   let arguments: Array[MalSymbol]
   let body: MalType
-  let lisp_env: MalEnv
-  new create(arguments': Array[MalSymbol], body': MalType, lisp_env': MalEnv) =>
+  let mal_env: MalEnv
+  new create(arguments': Array[MalSymbol], body': MalType, mal_env': MalEnv) =>
     arguments = arguments'
     body = body'
-    lisp_env = lisp_env'
+    mal_env = mal_env'
