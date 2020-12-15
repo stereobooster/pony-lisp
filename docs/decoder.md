@@ -9,11 +9,11 @@ type MalAtom is (I64 | F64 | String | None | Bool | MalSymbol | MalKeyword)
 Whenever I need to use actual parameter, I need to do "type assserion" with match:
 
 ```pony
-fun eval_def_bang(name: MalType, value: MalType, mal_env: MalEnv): MalType ? => 
+fun eval_def_bang(name: MalType, value: MalType, env: MalEnv): MalType ? => 
   match name
     | let name': MalSymbol => 
-      let value_evaluated = eval(value, mal_env)
-      mal_env.set(name'.value, value_evaluated)
+      let value_evaluated = eval(value, env)
+      env.set(name'.value, value_evaluated)
   else
     out.print("Error: Expects list as the second argument")
     error
@@ -32,10 +32,10 @@ fun as_symbol(input: MalType): MalSymbol ? =>
     error
   end
 
-fun eval_def_bang(name: MalType, value: MalType, mal_env: MalEnv): MalType ? => 
+fun eval_def_bang(name: MalType, value: MalType, env: MalEnv): MalType ? => 
   let name' = as_symbol(name)?
-  let value_evaluated = eval(value, mal_env)
-  mal_env.set(name'.value, value_evaluated)
+  let value_evaluated = eval(value, env)
+  env.set(name'.value, value_evaluated)
 ```
 
 This code is denser, but the question is how to pass error messages. I have two options:

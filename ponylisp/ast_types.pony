@@ -71,8 +71,8 @@ class  MalMap
 class  MalLambda
   let arguments: Array[MalSymbol]
   let body: MalType
-  let mal_env: MalEnv
-  new create(arguments': Array[MalSymbol], body': MalType, mal_env': MalEnv) =>
+  let env: MalEnv
+  new create(arguments': Array[MalSymbol], body': MalType, env': MalEnv) =>
     arguments = arguments'
     body = body'
-    mal_env = mal_env'
+    env = env'
