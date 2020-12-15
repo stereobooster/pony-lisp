@@ -19,7 +19,7 @@ class IfFunction is SpecialForm
     let condition_expression = if condition then
       input(1)?
     else
-      try 
+      try
         input(2)? // else is optional
       else
         return None
@@ -60,20 +60,15 @@ class DefExclamationFunction is SpecialForm
     env.set(name' .value, output)
     output
 
-// class LetStarFunction is SpecialForm
-//   let _e: Evaluator
-//   let _r: ErrorRegister
-//   new create(e: Evaluator, r: ErrorRegister) => _e = e; _r = r
-//   fun name(): String => "let*"
-//   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
-//     Decoder(_r).guard_array_length(2, 2, input)?
-//     let variables = Decoder(_r).as_array(input(0)?)?
-//     // Decoder(_r).guard_array_length_even(variables)?
-//     // Decoder(_r).guard_let_clause(variables)?
-//     let new_lisp_env = MalEnv(env)
-//     // for (k, v) in y.value.pairs() do
-//     //   eval_def_bang(v, y.value(k + 1)?, new_lisp_env)?
-//     // end
-//     let new_lisp_env = MalEnv(env)
-//     eval(input(1)?, new_lisp_env)
-
+class LetStarFunction is SpecialForm
+  let _e: Evaluator
+  let _r: ErrorRegister
+  new create(e: Evaluator, r: ErrorRegister) => _e = e; _r = r
+  fun name(): String => "let*"
+  fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
+    let variables = Decoder(_r).as_let_pairs(input(0)?)?
+    let new_lisp_env = MalEnv(env)
+    for v in variables.values() do
+      env.set(v._1.value, _e.eval(v._2, new_lisp_env)?)
+    end
+    _e.eval(input(1)?, new_lisp_env)?

@@ -8,7 +8,7 @@ class Handler is ReadlineNotify
   let _out: OutStream
   let _mal: Mal
   let _register: ErrorRegister
-  
+
   new iso create(out: OutStream) =>
     _out = out
     _register = ErrorRegister(out)

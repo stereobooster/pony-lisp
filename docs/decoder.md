@@ -3,7 +3,7 @@
 I use union to represent Lisp types:
 
 ```pony
-type MalAtom is (I64 | F64 | String | None | Bool | MalSymbol | MalKeyword)
+type MalPrimitive is (I64 | F64 | String | None | Bool | MalSymbol | MalKeyword)
 ```
 
 Whenever I need to use actual parameter, I need to do "type assserion" with match:

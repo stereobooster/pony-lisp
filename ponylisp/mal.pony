@@ -37,12 +37,21 @@ class Mal
     _env.set("fn*", FnStarFunction(this, _register))
     _env.set("do", DoFunction(this, _register))
     _env.set("def!", DefExclamationFunction(this, _register))
-    // add native functions 
+    _env.set("let*", LetStarFunction(this, _register))
+    // add native functions
     _env.set("+", PlusFunction(_register))
     _env.set("-", MinusFunction(_register))
     _env.set("*", MultiplyFunction(_register))
     _env.set("/", DivideFunction(_register))
-    // _env.set("let*", LetStarFunction(this, _register))
+    _env.set("list", ListFunction(_register))
+    _env.set("list?", ListQuestionFunction(_register))
+    _env.set("empty?", EmptyQuestionFunction(_register))
+    _env.set("count", CountFunction(_register))
+    _env.set("=", EqualFunction(_register))
+    _env.set("<", LessFunction(_register))
+    _env.set("<=", LessOrEqualFunction(_register))
+    _env.set(">", MoreFunction(_register))
+    _env.set(">=", MoreOrEqualFunction(_register))
     try
       // add lambdas
       rep("(def! not (fn* (a) (if a false true)))")?
@@ -65,7 +74,7 @@ class Mal
     | let x: MalLambda => Debug("MalLambda")
     end
 
-  fun read(str: String): MalType => 
+  fun read(str: String): MalType =>
     try
       let reader = Reader.create()?
       reader.read_str(str)?
@@ -73,7 +82,7 @@ class Mal
       _register.set("Read error")
     end
 
-  fun eval_application(list: MalList, env: MalEnv): MalType ? => 
+  fun eval_application(list: MalList, env: MalEnv): MalType ? =>
     let input = list.value
     if input.size() == 0 then
       return None
@@ -98,7 +107,7 @@ class Mal
       error
     end
 
-  fun eval(input: MalType, env: MalEnv): MalType ? => 
+  fun eval(input: MalType, env: MalEnv): MalType ? =>
     match input
     | None => None
     | let input': Bool => input'
@@ -108,20 +117,20 @@ class Mal
     | let input': MalKeyword => input'
     | let input': NativeFunction => input'
     | let input': SpecialForm => input'
-    | let input': MalVector => 
+    | let input': MalVector =>
       let output: Array[MalType] = []
       for v in input'.value.values() do
         output.push(eval(v, env)?)
       end
       MalVector(output)
-    | let input': MalMap => 
+    | let input': MalMap =>
       let output = Map[String, MalType](input'.value.size())
       for (k, v) in input'.value.pairs() do
         output(k) = eval(v, env)?
       end
       MalMap(output)
     | let input': MalList => eval_application(input', env)?
-    | let input': MalSymbol => 
+    | let input': MalSymbol =>
       try
         env.get(input'.value)?
       else
@@ -130,8 +139,8 @@ class Mal
       end
     end
 
-  fun print(exp: MalType): String => 
+  fun print(exp: MalType): String =>
     Printer.print_str(exp)
 
-  fun ref rep (str: String): String ? => 
+  fun ref rep (str: String): String ? =>
     print(eval(read(str), _env)?)

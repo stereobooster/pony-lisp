@@ -45,8 +45,8 @@ class TokenStream
     _position = _position + 1
     _tokens(_position - 1)?
 
-  fun peek(): String ? => 
-    _tokens(_position)? 
+  fun peek(): String ? =>
+    _tokens(_position)?
     // try
     //   _tokens(_position)
     // else
@@ -63,7 +63,7 @@ class Reader
     _float_r = Regex("^-?[0-9][0-9.]*$")?
     _string_r = Regex(""""(?:[\\].|[^\\"])*"""")?
 
-  fun read_atom(stream: TokenStream): MalAtom ? =>
+  fun read_primitive(stream: TokenStream): MalPrimitive ? =>
     let token = stream.next()?
 
     match token
@@ -159,7 +159,7 @@ class Reader
         return MalList([MalSymbol("deref"); read_form(stream)?])
 
     // list
-    | ")" => 
+    | ")" =>
       Debug("unexpected ')'")
       error
     | "(" => read_list(stream)?
@@ -171,13 +171,13 @@ class Reader
     | "[" => read_vector(stream)?
 
     // hash-map
-    | "}" => 
+    | "}" =>
       Debug("unexpected '}'")
       error
     | "{" => read_hash_map(stream)?
 
     else
-      read_atom(stream)?
+      read_primitive(stream)?
     end
 
   fun read_str(str: String): MalType ? =>

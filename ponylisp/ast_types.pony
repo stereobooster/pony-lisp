@@ -4,8 +4,8 @@ use "collections"
 // TODO: AstNode which will contain position, so it would be easier to report parse errors
 // it is possible to confuse None or String from pony with values from Lisp,
 // it would be more explicit if we provide wrappers fow all values, lik MalNone, MalString etc.
-type MalAtom is (I64 | F64 | String | None | Bool | MalSymbol | MalKeyword)
-type MalAst is (MalAtom | MalMap | MalList | MalVector)
+type MalPrimitive is (I64 | F64 | String | None | Bool | MalSymbol | MalKeyword)
+type MalAst is (MalPrimitive | MalMap | MalList | MalVector)
 type MalType is (MalAst | NativeFunction | MalLambda | SpecialForm)
 
 type MalEnvData is (Map[String, MalType])
@@ -17,7 +17,7 @@ class MalEnv
     _data = data
     _outer = outer
 
-  fun ref get(key: String): MalType ? => 
+  fun ref get(key: String): MalType ? =>
     if _data.contains(key) then
       return _data(key)?
     end
@@ -26,7 +26,7 @@ class MalEnv
     | let x: MalEnv => x.get(key)?
     end
 
-  fun ref set(key: String, value: MalType) => 
+  fun ref set(key: String, value: MalType) =>
     _data(key) = value
 
   fun ref find(key: String): (MalEnv | None) =>
@@ -38,30 +38,63 @@ class MalEnv
     | let x: MalEnv => x.find(key)
     end
 
-class MalSymbol // is Stringable
-  let value: String
-  new create(value': String) =>
-    value = value'
-  // fun eq(that: box->MalSymbol): Bool =>
-  //   this.value == that.value
+primitive MalTypeUtils
+  fun eq(first: MalType, second: MalType): (Bool | None) =>
+    match first
+    | let first': I64 =>
+      match second
+      | let second': I64 => first' == second'
+      else None end
+    | let first': F64 =>
+      match second
+      | let second': F64 => first' == second'
+      else None end
+    | let first': String =>
+      match second
+      | let second': String => first' == second'
+      else None end
+    | let first': None =>
+      match second
+      | let second': None => first' == second'
+      else None end
+    | let first': Bool =>
+      match second
+      | let second': Bool => first' == second'
+      else None end
+    | let first': MalSymbol =>
+      match second
+      | let second': MalSymbol => first' == second'
+      else None end
+    | let first': MalKeyword =>
+      match second
+      | let second': MalKeyword => first' == second'
+      else None end
+    else None end
 
-class MalKeyword
+class MalSymbol is Equatable[MalSymbol]
   let value: String
   new create(value': String) =>
     value = value'
+  fun box eq(that: box->MalSymbol): Bool =>
+    value == that.value
+
+class MalKeyword is Equatable[MalKeyword]
+  let value: String
+  new create(value': String) =>
+    value = value'
+  fun box eq(that: box->MalKeyword): Bool =>
+    value == that.value
 
 // we need those classes because Pony doesn't support recursive types
 class MalList
   let value: Array[MalType]
   new create(value': Array[MalType]) =>
     value = value'
-  fun ref getValue(): Array[MalType] => value
 
 class MalVector
   let value: Array[MalType]
   new create(value': Array[MalType]) =>
     value = value'
-  fun ref getValue(): Array[MalType] => value
 
 class  MalMap
   let value: Map[String, MalType]

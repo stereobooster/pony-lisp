@@ -42,3 +42,4 @@ Small experiment: trying to implement [Make-A-Lisp](https://github.com/kanaka/ma
 - `SomeClass` will create instance of a given calss, the same as `SomeClass()` (but second requires `new create`)
 - `_` is for private fields
 - https://github.com/ponylang/ponyc/blob/92601857ef5c174355828341a7181cb5b35f99fd/src/libponyc/type/cap.c
+- https://tutorial.ponylang.io/appendices/symbol-lookup-cheatsheet.html
