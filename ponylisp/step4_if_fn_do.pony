@@ -7,11 +7,11 @@ use "collections"
 class Handler is ReadlineNotify
   let _out: OutStream
   let _mal: Mal
-  let _register: ErrorRegister
+  let _register: EffectHandler
 
   new iso create(out: OutStream) =>
     _out = out
-    _register = ErrorRegister(out)
+    _register = EffectHandler(out)
     _mal = Mal(_register)
 
   fun ref apply(line: String, prompt: Promise[String]) =>

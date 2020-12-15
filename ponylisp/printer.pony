@@ -16,7 +16,7 @@ primitive Printer
       buf.append(indent)
       level = level - 1
     end
- 
+
     buf
 
   fun _string_map(data: Map[String, MalType], buf': String iso, indent: String, level: USize, pretty: Bool)
@@ -42,7 +42,7 @@ primitive Printer
       else
         print_comma = true
       end
-      
+
       if pretty then
         buf = _indent(consume buf, indent, level + 1)
       end
@@ -85,14 +85,15 @@ primitive Printer
     var print_comma = false
 
     for v in data.values() do
-      if print_comma then
-        buf.push(' ')
-      else
-        print_comma = true
-      end
 
       if pretty then
         buf = _indent(consume buf, indent, level + 1)
+      else
+        if print_comma then
+          buf.push(' ')
+        else
+          print_comma = true
+        end
       end
 
       buf = _string(v, consume buf, indent, level + 1, pretty)
@@ -104,7 +105,7 @@ primitive Printer
 
     buf.push(finish)
     buf
-  
+
   fun _string(
     value: MalType,
     buf': String iso,
@@ -119,32 +120,32 @@ primitive Printer
     var buf = consume buf'
 
     match value
-    | None => 
+    | None =>
       buf.append("nil")
-    | let x: Bool => 
+    | let x: Bool =>
       buf.append(x.string())
     | let x: I64 =>
       buf.append(x.string())
-    | let x: F64 => 
+    | let x: F64 =>
       buf.append(x.string())
-    | let x: String => 
-      // consume works, because we use reassign 
+    | let x: String =>
+      // consume works, because we use reassign
       buf = _escaped_string(consume buf, x)
-    | let x: MalList => 
+    | let x: MalList =>
       buf = _string_array(x.value, consume buf, indent, level + 1, pretty, '(', ')')
-    | let x: MalVector => 
+    | let x: MalVector =>
       buf = _string_array(x.value, consume buf, indent, level + 1, pretty, '[', ']')
-    | let x: MalMap => 
+    | let x: MalMap =>
       buf = _string_map(x.value, consume buf, indent, level + 1, pretty)
-    | let x: MalSymbol => 
+    | let x: MalSymbol =>
       buf.append(x.value)
-    | let x: MalKeyword => 
+    | let x: MalKeyword =>
       buf.append(x.value)
-    | let x: NativeFunction => 
+    | let x: NativeFunction =>
       buf.append("#<native function: " + x.name() + ">")
-    | let x: SpecialForm => 
+    | let x: SpecialForm =>
       buf.append("#<special form: " + x.name() + ">")
-    | let x: MalLambda => 
+    | let x: MalLambda =>
       buf.append("#<function>")
     end
 
@@ -199,6 +200,5 @@ primitive Printer
     buf.push('"')
     buf
 
-  fun print_str(value: MalType, readable: Bool = false): String iso^ => 
-    _string(value, recover String(256) end, "", 0, readable)
-    
+  fun print_str(value: MalType, readable: Bool = false): String iso^ =>
+    _string(value, recover String(256) end, " ", 0, readable)

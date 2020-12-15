@@ -6,7 +6,7 @@ use "collections"
 // it would be more explicit if we provide wrappers fow all values, lik MalNone, MalString etc.
 type MalPrimitive is (I64 | F64 | String | None | Bool | MalSymbol | MalKeyword)
 type MalAst is (MalPrimitive | MalMap | MalList | MalVector)
-type MalType is (MalAst | NativeFunction | MalLambda | SpecialForm)
+type MalType is (MalAst | MalLambda | NativeFunction | SpecialForm)
 
 type MalEnvData is (Map[String, MalType])
 class MalEnv
@@ -44,32 +44,56 @@ primitive MalTypeUtils
     | let first': I64 =>
       match second
       | let second': I64 => first' == second'
-      else None end
+      end
     | let first': F64 =>
       match second
       | let second': F64 => first' == second'
-      else None end
+      end
     | let first': String =>
       match second
       | let second': String => first' == second'
-      else None end
+      end
     | let first': None =>
       match second
       | let second': None => first' == second'
-      else None end
+      end
     | let first': Bool =>
       match second
       | let second': Bool => first' == second'
-      else None end
+      end
     | let first': MalSymbol =>
       match second
       | let second': MalSymbol => first' == second'
-      else None end
+      end
     | let first': MalKeyword =>
       match second
       | let second': MalKeyword => first' == second'
-      else None end
-    else None end
+      end
+    | let first': MalMap =>
+      match second
+      | let second': MalMap => first' is second'
+      end
+    | let first': MalList =>
+      match second
+      | let second': MalList => first' is second'
+      end
+    | let first': MalVector =>
+      match second
+      | let second': MalVector => first' is second'
+      end
+    | let first': NativeFunction =>
+      match second
+      | let second': NativeFunction => first' is second'
+      end
+    | let first': MalLambda =>
+      match second
+      | let second': MalLambda => first' is second'
+      end
+    | let first': SpecialForm =>
+      match second
+      | let second': SpecialForm => first' is second'
+      end
+    end
 
 class MalSymbol is Equatable[MalSymbol]
   let value: String

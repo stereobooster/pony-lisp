@@ -1,57 +1,52 @@
 use "collections"
 use "debug"
 
-// ErrorHandler?
-// TODO: TypeError, RUntimeError, SyntaxError
-class ErrorRegister
+// Object that provides handlers for I/O, Error
+class EffectHandler
   var _error: (String | None) = None
   let _out: OutStream
   new create(out: OutStream) =>
     _out = out
-  // fun ref get(): (String | None) => _error = None
-  fun set(e: (String | None)) =>
+  // TODO: TypeError, RuntimeError, SyntaxError
+  fun err(e: (String | None)) =>
     // temp solution
     _out.print(e.string())
     // _error = consume e
-
-// class DefaultMalEnv
-//   fun calc(): MalEnv =>
-//     let env = MalEnv()
-//     env.set("+", PlusFunction)
-//     env.set("-", MinusFunction)
-//     env.set("*", MultiplyFunction)
-//     env.set("/", DivideFunction)
-//     env
+  fun print(str: String) => _out.print(str)
 
 class Mal
   let _env: MalEnv
-  let _register: ErrorRegister
+  let _eh: EffectHandler
 
   // TODO: on_read, on_print, on_error
-  new create(register': ErrorRegister) =>
-    _register = register'
-    // can't move this and _register out of constructor because of refcap
+  new create(effect_handler: EffectHandler) =>
+    _eh = effect_handler
+    // can't move this and _eh out of constructor because of refcap
     _env = MalEnv()
     // add special forms
-    _env.set("if", IfFunction(this, _register))
-    _env.set("fn*", FnStarFunction(this, _register))
-    _env.set("do", DoFunction(this, _register))
-    _env.set("def!", DefExclamationFunction(this, _register))
-    _env.set("let*", LetStarFunction(this, _register))
+    _env.set("if", IfFunction(this, _eh))
+    _env.set("fn*", FnStarFunction(this, _eh))
+    _env.set("do", DoFunction(this, _eh))
+    _env.set("def!", DefExclamationFunction(this, _eh))
+    _env.set("let*", LetStarFunction(this, _eh))
     // add native functions
-    _env.set("+", PlusFunction(_register))
-    _env.set("-", MinusFunction(_register))
-    _env.set("*", MultiplyFunction(_register))
-    _env.set("/", DivideFunction(_register))
-    _env.set("list", ListFunction(_register))
-    _env.set("list?", ListQuestionFunction(_register))
-    _env.set("empty?", EmptyQuestionFunction(_register))
-    _env.set("count", CountFunction(_register))
-    _env.set("=", EqualFunction(_register))
-    _env.set("<", LessFunction(_register))
-    _env.set("<=", LessOrEqualFunction(_register))
-    _env.set(">", MoreFunction(_register))
-    _env.set(">=", MoreOrEqualFunction(_register))
+    _env.set("+", PlusFunction(_eh))
+    _env.set("-", MinusFunction(_eh))
+    _env.set("*", MultiplyFunction(_eh))
+    _env.set("/", DivideFunction(_eh))
+    _env.set("list", ListFunction(_eh))
+    _env.set("list?", ListQuestionFunction(_eh))
+    _env.set("empty?", EmptyQuestionFunction(_eh))
+    _env.set("count", CountFunction(_eh))
+    _env.set("=", EqualFunction(_eh))
+    _env.set("<", LessFunction(_eh))
+    _env.set("<=", LessOrEqualFunction(_eh))
+    _env.set(">", MoreFunction(_eh))
+    _env.set(">=", MoreOrEqualFunction(_eh))
+    _env.set("pr-str", PrStrFunction(_eh))
+    _env.set("str", StrFunction(_eh))
+    _env.set("prn", PrnFunction(_eh))
+    _env.set("println", PrintlnFunction(_eh))
     try
       // add lambdas
       rep("(def! not (fn* (a) (if a false true)))")?
@@ -79,7 +74,7 @@ class Mal
       let reader = Reader.create()?
       reader.read_str(str)?
     else
-      _register.set("Read error")
+      _eh.err("Read error")
     end
 
   fun eval_application(list: MalList, env: MalEnv): MalType ? =>
@@ -103,7 +98,7 @@ class Mal
         end
         eval(fn.body, new_lisp_env)?
     else
-      _register.set("Error: expected function")
+      _eh.err("Error: expected function")
       error
     end
 
@@ -134,7 +129,7 @@ class Mal
       try
         env.get(input'.value)?
       else
-        _register.set("Error: Variable not found " + input'.value)
+        _eh.err("Error: Variable not found " + input'.value)
         error
       end
     end

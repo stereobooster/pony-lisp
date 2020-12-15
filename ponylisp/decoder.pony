@@ -1,17 +1,17 @@
 use "collections"
 
 class Decoder
-  let _register: ErrorRegister
+  let _eh: EffectHandler
 
   // TODO: Assertion error (expected, got)
-  new create(register: ErrorRegister) =>
-    _register = register
+  new create(effect_handler: EffectHandler) =>
+    _eh = effect_handler
 
   fun ref as_symbol(input: MalType): MalSymbol ? =>
     match input
     | let output: MalSymbol => output
     else
-      _register.set("Expected symbol") // instead got typoef(input)
+      _eh.err("Expected symbol") // instead got typoef(input)
       error
     end
 
@@ -19,7 +19,7 @@ class Decoder
     match input
     | let output: Bool => output
     else
-      _register.set("Expected bool") // instead got typoef(input)
+      _eh.err("Expected bool") // instead got typoef(input)
       error
     end
 
@@ -27,7 +27,7 @@ class Decoder
     match input
     | let output: MalList => output
     else
-      _register.set("Expected list") // instead got typoef(input)
+      _eh.err("Expected list") // instead got typoef(input)
       error
     end
 
@@ -36,7 +36,7 @@ class Decoder
     | let output: I64 => output
     // | let output: F64 => output
     else
-      _register.set("Expected integer") // instead got typoef(input)
+      _eh.err("Expected integer") // instead got typoef(input)
       error
     end
 
@@ -50,13 +50,13 @@ class Decoder
         match v
         | let v': MalSymbol => output'.push(v')
         else
-          _register.set("Expected list of symbols") // instead got typoef(input) at position i
+          _eh.err("Expected list of symbols") // instead got typoef(input) at position i
           error
         end
       end
       output'
     else
-      _register.set("Expected list of symbols") // instead got typoef(input)
+      _eh.err("Expected list of symbols") // instead got typoef(input)
       error
     end
 
@@ -70,19 +70,19 @@ class Decoder
         match v
         | let v': I64 => output'.push(v')
         else
-          _register.set("Expected list of integers") // instead got typoef(input) at position i
+          _eh.err("Expected list of integers") // instead got typoef(input) at position i
           error
         end
       end
       output'
     else
-      _register.set("Expected list of integers") // instead got typoef(input)
+      _eh.err("Expected list of integers") // instead got typoef(input)
       error
     end
 
   fun ref guard_array_length(min: USize, max: USize, input: Array[MalType]) ? =>
     if (input.size() < min) or (input.size() > max) then
-      _register.set("Expected array of lenght " + min.string() + "-" + max.string()
+      _eh.err("Expected array of lenght " + min.string() + "-" + max.string()
         + " instead got " + input.size().string())
       error
     end
@@ -93,7 +93,7 @@ class Decoder
     | let output: MalVector => as_let_pairs(output.value)?
     | let output: Array[MalType] =>
       if (output.size() %% 2) != 0 then
-        _register.set("Expected list of even length")
+        _eh.err("Expected list of even length")
         error
       end
       let existing_keys = Set[String]
@@ -106,18 +106,18 @@ class Decoder
             output'.push((v', output(i + 1)?))
             existing_keys.set(v'.value)
           else
-            _register.set("Repeated value " + v'.value)
+            _eh.err("Repeated value " + v'.value)
             error
           end
         else
-          _register.set("Expected symbol") // instead got typoef(input) at position i
+          _eh.err("Expected symbol") // instead got typoef(input) at position i
           error
         end
         i = i + 2
       end
       output'
     else
-      _register.set("Expected list of symbols") // instead got typoef(input)
+      _eh.err("Expected list of symbols") // instead got typoef(input)
       error
     end
 

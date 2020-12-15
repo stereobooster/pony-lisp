@@ -9,12 +9,12 @@ interface Evaluator
 
 class IfFunction is SpecialForm
   let _e: Evaluator
-  let _r: ErrorRegister
-  new create(e: Evaluator, r: ErrorRegister) => _e = e; _r = r
+  let _eh: EffectHandler
+  new create(e: Evaluator, r: EffectHandler) => _e = e; _eh = r
   fun name(): String => "if"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
-    Decoder(_r).guard_array_length(2, 3, input)?
-    let condition = Decoder(_r).as_bool(_e.eval(input(0)?, env)?)?
+    Decoder(_eh).guard_array_length(2, 3, input)?
+    let condition = Decoder(_eh).as_bool(_e.eval(input(0)?, env)?)?
     // TODO: customise error message "Error: condition must be bool"
     let condition_expression = if condition then
       input(1)?
@@ -29,19 +29,19 @@ class IfFunction is SpecialForm
 
 class FnStarFunction is SpecialForm
   let _e: Evaluator
-  let _r: ErrorRegister
-  new create(e: Evaluator, r: ErrorRegister) => _e = e; _r = r
+  let _eh: EffectHandler
+  new create(e: Evaluator, r: EffectHandler) => _e = e; _eh = r
   fun name(): String => "fn*"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
-    Decoder(_r).guard_array_length(2, 2, input)?
-    let arguments  = Decoder(_r).as_array_symbol(input(0)?)?
-    // Decoder(_r).guard_array_unique(arguments)?
+    Decoder(_eh).guard_array_length(2, 2, input)?
+    let arguments  = Decoder(_eh).as_array_symbol(input(0)?)?
+    // Decoder(_eh).guard_array_unique(arguments)?
     MalLambda(arguments, input(1)?, env)
 
 class DoFunction is SpecialForm
   let _e: Evaluator
-  let _r: ErrorRegister
-  new create(e: Evaluator, r: ErrorRegister) => _e = e; _r = r
+  let _eh: EffectHandler
+  new create(e: Evaluator, r: EffectHandler) => _e = e; _eh = r
   fun name(): String => "do"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
     for v in input.values() do
@@ -50,23 +50,23 @@ class DoFunction is SpecialForm
 
 class DefExclamationFunction is SpecialForm
   let _e: Evaluator
-  let _r: ErrorRegister
-  new create(e: Evaluator, r: ErrorRegister) => _e = e; _r = r
+  let _eh: EffectHandler
+  new create(e: Evaluator, r: EffectHandler) => _e = e; _eh = r
   fun name(): String => "def!"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
-    Decoder(_r).guard_array_length(2, 2, input)?
-    let name' = Decoder(_r).as_symbol(input(0)?)?
+    Decoder(_eh).guard_array_length(2, 2, input)?
+    let name' = Decoder(_eh).as_symbol(input(0)?)?
     let output = _e.eval(input(1)?, env)?
     env.set(name' .value, output)
     output
 
 class LetStarFunction is SpecialForm
   let _e: Evaluator
-  let _r: ErrorRegister
-  new create(e: Evaluator, r: ErrorRegister) => _e = e; _r = r
+  let _eh: EffectHandler
+  new create(e: Evaluator, r: EffectHandler) => _e = e; _eh = r
   fun name(): String => "let*"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
-    let variables = Decoder(_r).as_let_pairs(input(0)?)?
+    let variables = Decoder(_eh).as_let_pairs(input(0)?)?
     let new_lisp_env = MalEnv(env)
     for v in variables.values() do
       env.set(v._1.value, _e.eval(v._2, new_lisp_env)?)
