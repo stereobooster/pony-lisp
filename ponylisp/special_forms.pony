@@ -86,6 +86,15 @@ class EvalFunction is SpecialForm
     Decoder(_eh).guard_array_length(1, 1, input)?
     _e.eval(_e.eval(input(0)?, env)?, env.root())?
 
+class QuoteFunction is SpecialForm
+  let _e: Evaluator
+  let _eh: EffectHandler
+  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  fun name(): String => "quote"
+  fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 1, input)?
+    input(0)?
+
 // TODO: write it in lisp instead
 class SwapExclamationFunction is SpecialForm
   let _e: Evaluator

@@ -48,6 +48,7 @@ class Mal
     _env.set("let*", LetStarFunction(this, _eh))
     _env.set("eval", EvalFunction(this, _eh))
     _env.set("swap!", SwapExclamationFunction(this, _eh))
+    _env.set("quote", QuoteFunction(this, _eh))
     // add native functions
     _env.set("+", PlusFunction(_eh))
     _env.set("-", MinusFunction(_eh))

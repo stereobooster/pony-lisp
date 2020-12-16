@@ -17,7 +17,7 @@ class Handler is ReadlineNotify
       _out.print(_mal.rep(line)?)
     end
     // can't use "\n" here
-    prompt("user>")
+    prompt("user> ")
 
   fun ref tab(line: String): Seq[String] box => Array[String]
 

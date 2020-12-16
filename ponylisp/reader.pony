@@ -140,7 +140,7 @@ class Reader
     let token = stream.peek()?
     match token
     // stream macros/transforms
-    | "\"" => stream.next()?
+    | "'" => stream.next()?
       return MalList([MalSymbol("quote"); read_form(stream)?])
     | "`" => stream.next()?
       return MalList([MalSymbol("quasiquote"); read_form(stream)?])
