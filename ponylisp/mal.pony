@@ -1,5 +1,4 @@
 use "collections"
-use "debug"
 
 // Object that provides handlers for I/O, Error
 class EffectHandler
@@ -50,32 +49,6 @@ class Mal
     try
       // add lambdas
       rep("(def! not (fn* (a) (if a false true)))")?
-    end
-
-  fun debug_val(value: MalType) =>
-    match value
-    | None => Debug(None)
-    | let x: Bool => Debug(x)
-    | let x: I64 => Debug(x)
-    | let x: F64 => Debug(x)
-    | let x: String => Debug("String"); Debug(x)
-    | let x: MalList => Debug("MalList")
-    | let x: MalVector => Debug("MalVector")
-    | let x: MalMap => Debug("MalMap")
-    | let x: MalSymbol => Debug("MalSymbol"); Debug(x.value)
-    | let x: MalKeyword => Debug("MalKeyword"); Debug(x.value)
-    | let x: NativeFunction => Debug("NativeFunction"); Debug(x.name())
-    | let x: MalLambda => Debug("MalLambda")
-    | let x: SpecialForm => Debug("SpecialForm"); Debug(x.name())
-    // | let x: SpecialFormTCO => Debug("SpecialFormTCO"); Debug(x.name())
-    end
-
-  fun read(str: String): MalType =>
-    try
-      let reader = Reader.create()?
-      reader.read_str(str)?
-    else
-      _eh.err("Read error")
     end
 
   fun eval_data(input: MalType, env: MalEnv): MalType ? =>
@@ -153,6 +126,14 @@ class Mal
       else
         return eval_data(tco_input, tco_env)?
       end
+    end
+
+  fun read(str: String): MalType =>
+    try
+      let reader = Reader.create()?
+      reader.read_str(str)?
+    else
+      _eh.err("Read error")
     end
 
   fun print(exp: MalType): String =>

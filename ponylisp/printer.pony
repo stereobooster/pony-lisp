@@ -1,6 +1,5 @@
 use "collections"
 use "format"
-use "debug"
 
 // https://github.com/ponylang/ponyc/blob/master/packages/json/_json_print.pony
 primitive Printer

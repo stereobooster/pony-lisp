@@ -8,37 +8,64 @@ type MalPrimitive is (I64 | F64 | String | None | Bool | MalSymbol | MalKeyword)
 type MalAst is (MalPrimitive | MalMap | MalList | MalVector)
 type MalType is (MalAst | MalLambda | NativeFunction | SpecialForm ) //| SpecialFormTCO
 
-type MalEnvData is (Map[String, MalType])
-class MalEnv
-  let _data: MalEnvData
-  let _outer: (MalEnv | None)
+class MalSymbol is Equatable[MalSymbol]
+  let value: String
+  new create(value': String) =>
+    value = value'
+  fun box eq(that: box->MalSymbol): Bool =>
+    value == that.value
 
-  new create(outer: (MalEnv | None) = None, data: MalEnvData = MalEnvData(0)) =>
-    _data = data
-    _outer = outer
+class MalKeyword is Equatable[MalKeyword]
+  let value: String
+  new create(value': String) =>
+    value = value'
+  fun box eq(that: box->MalKeyword): Bool =>
+    value == that.value
 
-  fun ref get(key: String): MalType ? =>
-    if _data.contains(key) then
-      return _data(key)?
-    end
-    match _outer
-    | None => error
-    | let x: MalEnv => x.get(key)?
-    end
+// we need those classes because Pony doesn't support recursive types
+class MalList
+  let value: Array[MalType]
+  new create(value': Array[MalType]) =>
+    value = value'
 
-  fun ref set(key: String, value: MalType) =>
-    _data(key) = value
+class MalVector
+  let value: Array[MalType]
+  new create(value': Array[MalType]) =>
+    value = value'
 
-  fun ref find(key: String): (MalEnv | None) =>
-    if _data.contains(key) then
-      return this
-    end
-    match _outer
-    | None => None
-    | let x: MalEnv => x.find(key)
-    end
+class  MalMap
+  let value: Map[String, MalType]
+  new create(value': Map[String, MalType]) =>
+    value = value'
+
+class  MalLambda
+  let arguments: Array[MalSymbol]
+  let body: MalType
+  let env: MalEnv
+  new create(arguments': Array[MalSymbol], body': MalType, env': MalEnv) =>
+    arguments = arguments'
+    body = body'
+    env = env'
 
 primitive MalTypeUtils
+  fun debug_val(value: MalType) =>
+    match value
+    | None => Debug(None)
+    | let x: Bool => Debug(x)
+    | let x: I64 => Debug(x)
+    | let x: F64 => Debug(x)
+    | let x: String => Debug("String"); Debug(x)
+    | let x: MalList => Debug("MalList")
+    | let x: MalVector => Debug("MalVector")
+    | let x: MalMap => Debug("MalMap")
+    | let x: MalSymbol => Debug("MalSymbol"); Debug(x.value)
+    | let x: MalKeyword => Debug("MalKeyword"); Debug(x.value)
+    | let x: NativeFunction => Debug("NativeFunction"); Debug(x.name())
+    | let x: MalLambda => Debug("MalLambda")
+    | let x: SpecialForm => Debug("SpecialForm"); Debug(x.name())
+    // | let x: SpecialFormTCO => Debug("SpecialFormTCO"); Debug(x.name())
+    end
+
   fun eq(first: MalType, second: MalType): (Bool | None) =>
     match first
     | let first': I64 =>
@@ -98,42 +125,3 @@ primitive MalTypeUtils
     //   | let second': SpecialFormTCO => first' is second'
     //   end
     end
-
-class MalSymbol is Equatable[MalSymbol]
-  let value: String
-  new create(value': String) =>
-    value = value'
-  fun box eq(that: box->MalSymbol): Bool =>
-    value == that.value
-
-class MalKeyword is Equatable[MalKeyword]
-  let value: String
-  new create(value': String) =>
-    value = value'
-  fun box eq(that: box->MalKeyword): Bool =>
-    value == that.value
-
-// we need those classes because Pony doesn't support recursive types
-class MalList
-  let value: Array[MalType]
-  new create(value': Array[MalType]) =>
-    value = value'
-
-class MalVector
-  let value: Array[MalType]
-  new create(value': Array[MalType]) =>
-    value = value'
-
-class  MalMap
-  let value: Map[String, MalType]
-  new create(value': Map[String, MalType]) =>
-    value = value'
-
-class  MalLambda
-  let arguments: Array[MalSymbol]
-  let body: MalType
-  let env: MalEnv
-  new create(arguments': Array[MalSymbol], body': MalType, env': MalEnv) =>
-    arguments = arguments'
-    body = body'
-    env = env'
