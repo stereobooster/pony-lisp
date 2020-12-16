@@ -25,12 +25,8 @@ primitive Tokenizer
     let matches = r.matches(str)
     let result: Array[String] = []
     for element in matches do
-      // ignore comments
-      if element(1)? != ";" then
-        // Debug(element.start_pos())
-        // result.push(Token(element(1)?, element.start_pos(), element.end_pos()))
-        result.push(element(1)?)
-      end
+      // result.push(Token(element(1)?, element.start_pos(), element.end_pos()))
+      result.push(element(1)?)
     end
     result
 
@@ -89,6 +85,7 @@ class Reader
       // "\u029e" is ʞ, not sure why MAL chose to do it this way
       // | ':' => ";\u029e" + token.cut(0, 1)
       | ':' => MalKeyword(token)
+      | ';' => None // comment
       else
         MalSymbol(token)
       end
@@ -143,7 +140,6 @@ class Reader
     let token = stream.peek()?
     match token
     // stream macros/transforms
-    | ";" => None
     | "\"" => stream.next()?
       return MalList([MalSymbol("quote"); read_form(stream)?])
     | "`" => stream.next()?
@@ -184,6 +180,6 @@ class Reader
     let tokens = Tokenizer.tokenize(str)?
     if tokens.size() == 0 then
       Debug("empty input")
-      error
+      None
     end
     read_form(TokenStream(tokens))?

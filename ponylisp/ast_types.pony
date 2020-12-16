@@ -6,7 +6,7 @@ use "collections"
 // it would be more explicit if we provide wrappers fow all values, lik MalNone, MalString etc.
 type MalPrimitive is (I64 | F64 | String | None | Bool | MalSymbol | MalKeyword)
 type MalAst is (MalPrimitive | MalMap | MalList | MalVector)
-type MalType is (MalAst | MalLambda | NativeFunction | SpecialForm)
+type MalType is (MalAst | MalLambda | NativeFunction | SpecialForm ) //| SpecialFormTCO
 
 type MalEnvData is (Map[String, MalType])
 class MalEnv
@@ -93,6 +93,10 @@ primitive MalTypeUtils
       match second
       | let second': SpecialForm => first' is second'
       end
+    // | let first': SpecialFormTCO =>
+    //   match second
+    //   | let second': SpecialFormTCO => first' is second'
+    //   end
     end
 
 class MalSymbol is Equatable[MalSymbol]

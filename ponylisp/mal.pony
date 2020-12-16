@@ -65,8 +65,9 @@ class Mal
     | let x: MalSymbol => Debug("MalSymbol"); Debug(x.value)
     | let x: MalKeyword => Debug("MalKeyword"); Debug(x.value)
     | let x: NativeFunction => Debug("NativeFunction"); Debug(x.name())
-    | let x: SpecialForm => Debug("SpecialForm"); Debug(x.name())
     | let x: MalLambda => Debug("MalLambda")
+    | let x: SpecialForm => Debug("SpecialForm"); Debug(x.name())
+    // | let x: SpecialFormTCO => Debug("SpecialFormTCO"); Debug(x.name())
     end
 
   fun read(str: String): MalType =>
@@ -77,32 +78,7 @@ class Mal
       _eh.err("Read error")
     end
 
-  fun eval_application(list: MalList, env: MalEnv): MalType ? =>
-    let input = list.value
-    if input.size() == 0 then
-      return None
-    end
-    match eval(input(0)?, env)?
-    | let fn: SpecialForm =>
-      fn.apply(input.slice(1), env)?
-    | let fn: NativeFunction =>
-      let evaluated_input: Array[MalType] = []
-      for v in input.slice(1).values() do
-        evaluated_input.push(eval(v, env)?)
-      end
-      fn.apply(evaluated_input)?
-    | let fn: MalLambda =>
-        let new_lisp_env = MalEnv(fn.env)
-        for (k, v) in fn.arguments.pairs() do
-          env.set(v.value, eval(input(k + 1)?, new_lisp_env)?)
-        end
-        eval(fn.body, new_lisp_env)?
-    else
-      _eh.err("Error: expected function")
-      error
-    end
-
-  fun eval(input: MalType, env: MalEnv): MalType ? =>
+  fun eval_data(input: MalType, env: MalEnv): MalType ? =>
     match input
     | None => None
     | let input': Bool => input'
@@ -124,13 +100,58 @@ class Mal
         output(k) = eval(v, env)?
       end
       MalMap(output)
-    | let input': MalList => eval_application(input', env)?
-    | let input': MalSymbol =>
-      try
-        env.get(input'.value)?
+    else
+      _eh.err("Can't happen")
+      error
+    end
+
+  fun eval(input: MalType, env: MalEnv): MalType ? =>
+    var tco_input: MalType = consume input
+    var tco_env: MalEnv = consume env
+    while true do
+      match tco_input
+      | let input': MalSymbol =>
+        try
+          return tco_env.get(input'.value)?
+        else
+          _eh.err("Error: Variable not found " + input'.value)
+          error
+        end
+      | let input': MalList =>
+        let list = input'.value
+        if list.size() == 0 then
+          return None
+        end
+        match eval(list(0)?, tco_env)?
+        | let fn: NativeFunction =>
+          let evaluated_input: Array[MalType] = []
+          for v in list.slice(1).values() do
+            evaluated_input.push(eval(v, tco_env)?)
+          end
+          return fn.apply(consume evaluated_input)?
+        | let fn: SpecialForm =>
+          return fn.apply(list.slice(1), tco_env)?
+        // | let fn: SpecialFormTCO =>
+        //   let result: (MalType, MalEnv) = fn.apply_tco(list.slice(1), tco_env)?
+        //   tco_input = result._1
+        //   tco_env = result._2
+        //   None // to make compiler happy
+        | let fn: MalLambda =>
+            let new_lisp_env = MalEnv(fn.env)
+            for (k, v) in fn.arguments.pairs() do
+              new_lisp_env.set(v.value, eval(list(k + 1)?, tco_env)?)
+              // this doesn't work
+              // new_lisp_env.set(v.value, eval(list(k + 1)?, new_lisp_env)?)
+            end
+            tco_input = fn.body
+            tco_env = consume new_lisp_env
+            None // to make compiler happy
+        else
+          _eh.err("Error: expected function")
+          error
+        end
       else
-        _eh.err("Error: Variable not found " + input'.value)
-        error
+        return eval_data(tco_input, tco_env)?
       end
     end
 
