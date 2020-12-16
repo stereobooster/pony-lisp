@@ -30,3 +30,10 @@ class MalEnv
     | None => None
     | let x: MalEnv => x.find(key)
     end
+
+  // to define variables at global scope
+  fun ref root(): MalEnv  =>
+    match _outer
+    | None => this
+    | let x: MalEnv => x.root()
+    end

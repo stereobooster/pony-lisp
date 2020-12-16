@@ -16,7 +16,7 @@ class DefaultMalEnv
 class Handler is ReadlineNotify
   let out: OutStream
   let _lisp_env: MalEnv
-  
+
   new iso create(out': OutStream) =>
     out = out'
     _lisp_env = DefaultMalEnv.calc()
@@ -31,7 +31,7 @@ class Handler is ReadlineNotify
 
   fun ref tab(line: String): Seq[String] box => Array[String]
 
-  fun read(str: String): MalType => 
+  fun read(str: String): MalType =>
     try
       let reader = Reader.create()?
       reader.read_str(str)?
@@ -39,10 +39,10 @@ class Handler is ReadlineNotify
       Debug("Read error")
       None
     end
-  
-  fun eval_def(a: MalType, b: MalType, mal_env: MalEnv): MalType ? => 
+
+  fun eval_def(a: MalType, b: MalType, mal_env: MalEnv): MalType ? =>
     match a
-      | let x: MalSymbol => 
+      | let x: MalSymbol =>
         let result = eval(b, mal_env)
         mal_env.set(x.value, result)
         // we need explicit return result, because Pony returns previos version of value on assignment
@@ -52,7 +52,7 @@ class Handler is ReadlineNotify
         error
       end
 
-  fun eval_application(x: MalList, mal_env: MalEnv): MalType => 
+  fun eval_application(x: MalList, mal_env: MalEnv): MalType =>
     if x.value.size() != 3 then
       Debug("Only functions with two arguments supported")
       None
@@ -68,14 +68,14 @@ class Handler is ReadlineNotify
           error
         end
       match operator.value
-      | "def!" => 
+      | "def!" =>
         return eval_def(x.value(1)?, x.value(2)?, mal_env)?
-      | "let*" => 
-        let new_lisp_env = MalEnv(mal_env)
+      | "let*" =>
+        let new_env = MalEnv(mal_env)
         match x.value(1)?
-        | let y: MalList => 
-          eval_def(y.value(0)?, y.value(1)?, new_lisp_env)?
-          return eval(x.value(2)?, new_lisp_env)
+        | let y: MalList =>
+          eval_def(y.value(0)?, y.value(1)?, new_env)?
+          return eval(x.value(2)?, new_env)
         else
           Debug("Expects list")
           error
@@ -96,14 +96,14 @@ class Handler is ReadlineNotify
           error
         end
         match fn.apply(temp.slice(1))
-        | let e: NFError => out.print("Error: " + e()) 
+        | let e: NFError => out.print("Error: " + e())
         | let a: NFSuccess[MalType] => a()
         end
       else
         None
       end
 
-  fun eval(ast: MalType, mal_env: MalEnv): MalType => 
+  fun eval(ast: MalType, mal_env: MalEnv): MalType =>
     match ast
     | None => None
     | let x: Bool => x
@@ -111,34 +111,34 @@ class Handler is ReadlineNotify
     | let x: F64 => x
     | let x: String => x
     | let x: MalKeyword => x
-    | let x: MalVector => 
+    | let x: MalVector =>
       let temp: Array[MalType] = []
       for v in x.value.values() do
         temp.push(eval(v, mal_env))
       end
       MalVector(temp)
-    | let x: MalMap => 
+    | let x: MalMap =>
       let temp = Map[String, MalType](x.value.size())
       for (k, v) in x.value.pairs() do
         temp(k) = eval(v, mal_env)
       end
       MalMap(temp)
     | let x: MalList => eval_application(x, mal_env)
-    | let x: MalSymbol => 
+    | let x: MalSymbol =>
       try
         mal_env.get(x.value)?
       else
         out.print("Error: Variable not found " + x.value)
         None
       end
-    | let x: NativeFunction => 
+    | let x: NativeFunction =>
       x
     end
 
-  fun print(exp: MalType): String => 
+  fun print(exp: MalType): String =>
     Printer.print_str(exp)
 
-  fun ref rep (str: String): String => 
+  fun ref rep (str: String): String =>
     print(eval(read(str), _lisp_env))
 
 actor Main

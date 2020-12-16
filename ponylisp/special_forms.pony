@@ -70,12 +70,39 @@ class LetStarFunction is SpecialForm
   fun name(): String => "let*"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
     let variables = Decoder(_eh).as_let_pairs(input(0)?)?
-    let new_lisp_env = MalEnv(env)
+    let new_env = MalEnv(env)
     for v in variables.values() do
-      env.set(v._1.value, _e.eval(v._2, new_lisp_env)?)
+      new_env.set(v._1.value, _e.eval(v._2, env)?)
     end
     let last: MalType = input(1)?
-    _e.eval(last, env)?
+    _e.eval(last, new_env)?
+
+class EvalFunction is SpecialForm
+  let _e: Evaluator
+  let _eh: EffectHandler
+  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  fun name(): String => "eval"
+  fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 1, input)?
+    _e.eval(_e.eval(input(0)?, env)?, env.root())?
+
+// TODO: write it in lisp instead
+class SwapExclamationFunction is SpecialForm
+  let _e: Evaluator
+  let _eh: EffectHandler
+  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  fun name(): String => "swap!"
+  fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
+    Decoder(_eh).guard_array_length(2, USize.max_value(), input)?
+    let evaluated_input: Array[MalType] = []
+    for v in input.values() do
+      evaluated_input.push(_e.eval(v, env)?)
+    end
+    let first = Decoder(_eh).as_atom(evaluated_input(0)?)?
+    evaluated_input.update(0, evaluated_input(1)?)?
+    evaluated_input.update(1, first.value)?
+    first.value = _e.eval(MalList(evaluated_input), env)?
+    first.value
 
 // this makes compilation slower
 
@@ -138,12 +165,12 @@ class LetStarFunction is SpecialForm
 
 //   fun ref apply_tco(input: Array[MalType], env: MalEnv): (MalType, MalEnv) ? =>
 //     let variables = Decoder(_eh).as_let_pairs(input(0)?)?
-//     let new_lisp_env = MalEnv(env)
+//     let new_env = MalEnv(env)
 //     for v in variables.values() do
-//       env.set(v._1.value, _e.eval(v._2, new_lisp_env)?)
+//       env.set(v._1.value, _e.eval(v._2, new_env)?)
 //     end
 //     let last: MalType = input(1)?
-//     (last, new_lisp_env)
+//     (last, new_env)
 
 //   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
 //     let result = apply_tco(input, env)?

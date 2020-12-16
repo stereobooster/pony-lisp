@@ -174,3 +174,68 @@ class PrintlnFunction is NativeFunction
         {(buf, x) => buf + Printer.print_str(x, false) + " " })
     _eh.print(str)
     None
+
+class ReadStringFunction is NativeFunction
+  let _eh: EffectHandler
+  new create(r: EffectHandler) => _eh = r
+  fun name(): String => "read-string"
+  fun ref apply(input: Array[MalType]): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 1, input)?
+    let first = Decoder(_eh).as_string(input(0)?)?
+    try
+      let reader = Reader.create()?
+      reader.read_str(first)?
+    else
+      _eh.err("Parse error")
+    end
+
+class SlurpFunction is NativeFunction
+  let _eh: EffectHandler
+  new create(r: EffectHandler) => _eh = r
+  fun name(): String => "slurp"
+  fun ref apply(input: Array[MalType]): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 1, input)?
+    let first = Decoder(_eh).as_string(input(0)?)?
+    try
+      _eh.read_file(first)?
+    else
+      _eh.err("Can't read file '" + first + "'")
+    end
+
+class AtomFunction is NativeFunction
+  let _eh: EffectHandler
+  new create(r: EffectHandler) => _eh = r
+  fun name(): String => "atom"
+  fun ref apply(input: Array[MalType]): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 1, input)?
+    MalAtom(input(0)?)
+
+class AtomQuestionFunction is NativeFunction
+  let _eh: EffectHandler
+  new create(r: EffectHandler) => _eh = r
+  fun name(): String => "atom?"
+  fun ref apply(input: Array[MalType]): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 1, input)?
+    match input(0)?
+    | let output: MalAtom => true
+    else false end
+
+class DerefFunction is NativeFunction
+  let _eh: EffectHandler
+  new create(r: EffectHandler) => _eh = r
+  fun name(): String => "deref"
+  fun ref apply(input: Array[MalType]): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 1, input)?
+    let first = Decoder(_eh).as_atom(input(0)?)?
+    first.value
+
+class ResetExclamationFunction is NativeFunction
+  let _eh: EffectHandler
+  new create(r: EffectHandler) => _eh = r
+  fun name(): String => "reset!"
+  fun ref apply(input: Array[MalType]): MalType ? =>
+    Decoder(_eh).guard_array_length(2, 2, input)?
+    let first = Decoder(_eh).as_atom(input(0)?)?
+    let second = input(1)?
+    first.value = second
+    second

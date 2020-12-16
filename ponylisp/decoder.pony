@@ -40,6 +40,22 @@ class Decoder
       error
     end
 
+  fun ref as_string(input: MalType): String ? =>
+    match input
+    | let output: String => output
+    else
+      _eh.err("Expected string") // instead got typoef(input)
+      error
+    end
+
+  fun ref as_atom(input: MalType): MalAtom ? =>
+    match input
+    | let output: MalAtom => output
+    else
+      _eh.err("Expected atom") // instead got typoef(input)
+      error
+    end
+
   fun ref as_array_symbol(input: (MalType | Array[MalType])): Array[MalSymbol] ? =>
     match input
     | let output: MalList => as_array_symbol(output.value)?

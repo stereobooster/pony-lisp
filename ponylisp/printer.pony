@@ -3,22 +3,7 @@ use "format"
 
 // https://github.com/ponylang/ponyc/blob/master/packages/json/_json_print.pony
 primitive Printer
-  fun _indent(buf: String iso, indent: String, level': USize): String iso^ =>
-    """
-    Add indentation to the buf to the appropriate indent_level
-    """
-    var level = level'
-
-    buf.push('\n')
-
-    while level != 0 do
-      buf.append(indent)
-      level = level - 1
-    end
-
-    buf
-
-  fun _string_map(data: Map[String, MalType], buf': String iso, indent: String, level: USize, pretty: Bool)
+  fun _string_map(data: Map[String, MalType], buf': String iso, print_readably: Bool)
     : String iso^
   =>
     """
@@ -42,17 +27,9 @@ primitive Printer
         print_comma = true
       end
 
-      if pretty then
-        buf = _indent(consume buf, indent, level + 1)
-      end
-
-      buf = _string(k, consume buf, indent, level + 1, pretty)
+      buf = _string(k, consume buf, print_readably)
       buf.push(' ')
-      buf = _string(v, consume buf, indent, level + 1, pretty)
-    end
-
-    if pretty then
-      buf = _indent(consume buf, indent, level)
+      buf = _string(v, consume buf, print_readably)
     end
 
     buf.push('}')
@@ -61,9 +38,7 @@ primitive Printer
   fun _string_array(
     data: Array[MalType],
     buf': String iso,
-    indent: String,
-    level: USize,
-    pretty: Bool,
+    print_readably: Bool,
     start: U8,
     finish: U8)
     : String iso^
@@ -84,22 +59,13 @@ primitive Printer
     var print_comma = false
 
     for v in data.values() do
-
-      if pretty then
-        buf = _indent(consume buf, indent, level + 1)
+      if print_comma then
+        buf.push(' ')
       else
-        if print_comma then
-          buf.push(' ')
-        else
-          print_comma = true
-        end
+        print_comma = true
       end
 
-      buf = _string(v, consume buf, indent, level + 1, pretty)
-    end
-
-    if pretty then
-      buf = _indent(consume buf, indent, level)
+      buf = _string(v, consume buf, print_readably)
     end
 
     buf.push(finish)
@@ -108,9 +74,7 @@ primitive Printer
   fun _string(
     value: MalType,
     buf': String iso,
-    indent: String,
-    level: USize,
-    pretty: Bool)
+    print_readably: Bool)
     : String iso^
   =>
     """
@@ -129,23 +93,31 @@ primitive Printer
       buf.append(x.string())
     | let x: String =>
       // consume works, because we use reassign
-      buf = _escaped_string(consume buf, x)
+      if print_readably then
+        buf = _escaped_string(consume buf, x)
+      else
+        buf.append(x)
+      end
     | let x: MalList =>
-      buf = _string_array(x.value, consume buf, indent, level + 1, pretty, '(', ')')
+      buf = _string_array(x.value, consume buf, print_readably, '(', ')')
     | let x: MalVector =>
-      buf = _string_array(x.value, consume buf, indent, level + 1, pretty, '[', ']')
+      buf = _string_array(x.value, consume buf, print_readably, '[', ']')
     | let x: MalMap =>
-      buf = _string_map(x.value, consume buf, indent, level + 1, pretty)
+      buf = _string_map(x.value, consume buf, print_readably)
     | let x: MalSymbol =>
       buf.append(x.value)
     | let x: MalKeyword =>
       buf.append(x.value)
     | let x: NativeFunction =>
-      buf.append("#<native function: " + x.name() + ">")
+      buf.append("#<native function: " + x.name() + " >")
     | let x: MalLambda =>
       buf.append("#<function>")
+    | let x: MalAtom =>
+      buf.append("(atom ")
+      buf = _string(x.value, consume buf, print_readably)
+      buf.append(")")
     | let x: SpecialForm =>
-      buf.append("#<special form: " + x.name() + ">")
+      buf.append("#<special form: " + x.name() + " >")
     // | let x: SpecialFormTCO =>
     //   buf.append("#<special form: " + x.name() + ">")
     end
@@ -201,5 +173,5 @@ primitive Printer
     buf.push('"')
     buf
 
-  fun print_str(value: MalType, readable: Bool = false): String iso^ =>
-    _string(value, recover String(256) end, " ", 0, readable)
+  fun print_str(value: MalType, print_readably: Bool = false): String iso^ =>
+    _string(value, recover String(256) end, print_readably)

@@ -1,26 +1,44 @@
 use "collections"
+use "files"
+// use "debug"
 
 // Object that provides handlers for I/O, Error
 class EffectHandler
-  var _error: (String | None) = None
+  // var _error: (String | None) = None
   let _out: OutStream
-  new create(out: OutStream) =>
+  let _root: (AmbientAuth | None)
+  new create(out: OutStream, root: (AmbientAuth | None)) =>
     _out = out
+    _root = root
   // TODO: TypeError, RuntimeError, SyntaxError
   fun err(e: (String | None)) =>
     // temp solution
     _out.print(e.string())
     // _error = consume e
-  fun print(str: String) => _out.print(str)
+  fun print(str: String) =>
+    _out.print(str)
+  fun read_file(file_name: String): String ? =>
+    let path = FilePath(_root as AmbientAuth, file_name)?
+    // Debug(path.string())
+    var buf = ""
+    match OpenFile(path)
+    | let file: File =>
+      while file.errno() is FileOK do
+        buf = buf + file.read_string(1024)
+      end
+    else
+      error
+    end
+    buf
 
+// can this be an actor?
 class Mal
   let _env: MalEnv
   let _eh: EffectHandler
 
-  // TODO: on_read, on_print, on_error
   new create(effect_handler: EffectHandler) =>
     _eh = effect_handler
-    // can't move this and _eh out of constructor because of refcap
+    // can't move `this` and `_eh` out of constructor because of refcap
     _env = MalEnv()
     // add special forms
     _env.set("if", IfFunction(this, _eh))
@@ -28,6 +46,8 @@ class Mal
     _env.set("do", DoFunction(this, _eh))
     _env.set("def!", DefExclamationFunction(this, _eh))
     _env.set("let*", LetStarFunction(this, _eh))
+    _env.set("eval", EvalFunction(this, _eh))
+    _env.set("swap!", SwapExclamationFunction(this, _eh))
     // add native functions
     _env.set("+", PlusFunction(_eh))
     _env.set("-", MinusFunction(_eh))
@@ -46,21 +66,22 @@ class Mal
     _env.set("str", StrFunction(_eh))
     _env.set("prn", PrnFunction(_eh))
     _env.set("println", PrintlnFunction(_eh))
+    _env.set("read-string", ReadStringFunction(_eh))
+    _env.set("slurp", SlurpFunction(_eh))
+    _env.set("atom", AtomFunction(_eh))
+    _env.set("atom?", AtomQuestionFunction(_eh))
+    _env.set("deref", DerefFunction(_eh))
+    _env.set("reset!", ResetExclamationFunction(_eh))
     try
       // add lambdas
       rep("(def! not (fn* (a) (if a false true)))")?
+      rep("""(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)")))))""")?
+      // TODO: need `&` support
+      // rep("""(def! swap! (fn* (a, f, &rest) (reset! a (f (deref a) &rest)) ))""")?
     end
 
-  fun eval_data(input: MalType, env: MalEnv): MalType ? =>
+  fun _eval_data(input: MalType, env: MalEnv): MalType ? =>
     match input
-    | None => None
-    | let input': Bool => input'
-    | let input': I64 => input'
-    | let input': F64 => input'
-    | let input': String => input'
-    | let input': MalKeyword => input'
-    | let input': NativeFunction => input'
-    | let input': SpecialForm => input'
     | let input': MalVector =>
       let output: Array[MalType] = []
       for v in input'.value.values() do
@@ -74,8 +95,7 @@ class Mal
       end
       MalMap(output)
     else
-      _eh.err("Can't happen")
-      error
+      input
     end
 
   fun eval(input: MalType, env: MalEnv): MalType ? =>
@@ -110,21 +130,21 @@ class Mal
         //   tco_env = result._2
         //   None // to make compiler happy
         | let fn: MalLambda =>
-            let new_lisp_env = MalEnv(fn.env)
+            let new_env = MalEnv(fn.env)
             for (k, v) in fn.arguments.pairs() do
-              new_lisp_env.set(v.value, eval(list(k + 1)?, tco_env)?)
+              new_env.set(v.value, eval(list(k + 1)?, tco_env)?)
               // this doesn't work
-              // new_lisp_env.set(v.value, eval(list(k + 1)?, new_lisp_env)?)
+              // new_env.set(v.value, eval(list(k + 1)?, new_env)?)
             end
             tco_input = fn.body
-            tco_env = consume new_lisp_env
+            tco_env = consume new_env
             None // to make compiler happy
         else
           _eh.err("Error: expected function")
           error
         end
       else
-        return eval_data(tco_input, tco_env)?
+        return _eval_data(tco_input, tco_env)?
       end
     end
 

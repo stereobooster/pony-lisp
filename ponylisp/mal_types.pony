@@ -6,7 +6,7 @@ use "collections"
 // it would be more explicit if we provide wrappers fow all values, lik MalNone, MalString etc.
 type MalPrimitive is (I64 | F64 | String | None | Bool | MalSymbol | MalKeyword)
 type MalAst is (MalPrimitive | MalMap | MalList | MalVector)
-type MalType is (MalAst | MalLambda | NativeFunction | SpecialForm ) //| SpecialFormTCO
+type MalType is (MalAst | MalAtom | MalLambda | NativeFunction | SpecialForm ) //| SpecialFormTCO
 
 class MalSymbol is Equatable[MalSymbol]
   let value: String
@@ -21,6 +21,11 @@ class MalKeyword is Equatable[MalKeyword]
     value = value'
   fun box eq(that: box->MalKeyword): Bool =>
     value == that.value
+
+class MalAtom
+  var value: MalType
+  new create(value': MalType) =>
+    value = value'
 
 // we need those classes because Pony doesn't support recursive types
 class MalList
@@ -62,6 +67,7 @@ primitive MalTypeUtils
     | let x: MalKeyword => Debug("MalKeyword"); Debug(x.value)
     | let x: NativeFunction => Debug("NativeFunction"); Debug(x.name())
     | let x: MalLambda => Debug("MalLambda")
+    | let x: MalAtom => Debug("MalAtom")
     | let x: SpecialForm => Debug("SpecialForm"); Debug(x.name())
     // | let x: SpecialFormTCO => Debug("SpecialFormTCO"); Debug(x.name())
     end
@@ -115,6 +121,10 @@ primitive MalTypeUtils
     | let first': MalLambda =>
       match second
       | let second': MalLambda => first' is second'
+      end
+    | let first': MalAtom =>
+      match second
+      | let second': MalAtom => first' is second'
       end
     | let first': SpecialForm =>
       match second
