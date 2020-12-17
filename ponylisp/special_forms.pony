@@ -86,15 +86,6 @@ class EvalFunction is SpecialForm
     Decoder(_eh).guard_array_length(1, 1, input)?
     _e.eval(_e.eval(input(0)?, env)?, env.root())?
 
-class QuoteFunction is SpecialForm
-  let _e: Evaluator
-  let _eh: EffectHandler
-  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
-  fun name(): String => "quote"
-  fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
-    Decoder(_eh).guard_array_length(1, 1, input)?
-    input(0)?
-
 // TODO: write it in lisp instead
 class SwapExclamationFunction is SpecialForm
   let _e: Evaluator
@@ -112,6 +103,99 @@ class SwapExclamationFunction is SpecialForm
     evaluated_input.update(1, first.value)?
     first.value = _e.eval(MalList(evaluated_input), env)?
     first.value
+
+class QuoteFunction is SpecialForm
+  let _e: Evaluator
+  let _eh: EffectHandler
+  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  fun name(): String => "quote"
+  fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 1, input)?
+    input(0)?
+
+class QuasiquoteFunction is SpecialForm
+  let _e: Evaluator
+  let _eh: EffectHandler
+  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  fun name(): String => "quasiquote"
+  fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 1, input)?
+    _e.eval(expand(input(0)?, env)?, env)?
+
+  // I regret I wrote this
+  fun ref expand(input: MalType, env: MalEnv): MalType ? =>
+    match input
+    | let list: MalList =>
+      if list.value.size() == 0 then
+        return list
+      end
+      match list.value(0)?
+      | let first: MalSymbol => if first.value == "unquote" then
+          return list.value(1)?
+        end
+      end
+      var result: MalList = MalList([])
+      for v in list.value.reverse().values() do
+        // _eh.print(Printer.print_str(result))
+        match v
+        | let v': MalList =>
+          if v'.value.size() != 0 then
+            match v'.value(0)?
+            | let first': MalSymbol =>
+              if first'.value == "splice-unquote" then
+                result = MalList([
+                  MalSymbol("concat")
+                  v'.value(1)?
+                  result
+                ])
+                continue
+              end
+            end
+          end
+        end
+        result = MalList([
+          MalSymbol("cons")
+          expand(v, env)?
+          result
+        ])
+      end
+      return result
+      | let list: MalVector =>
+        if list.value.size() == 0 then
+          return list
+        end
+        var result: MalList = MalList([])
+        for v in list.value.reverse().values() do
+          // _eh.print(Printer.print_str(result))
+          match v
+          | let v': MalList =>
+            if v'.value.size() != 0 then
+              match v'.value(0)?
+              | let first': MalSymbol =>
+                if first'.value == "splice-unquote" then
+                  result = MalList([
+                    MalSymbol("concat")
+                    v'.value(1)?
+                    result
+                  ])
+                  continue
+                end
+              end
+            end
+          end
+          result = MalList([
+            MalSymbol("cons")
+            expand(v, env)?
+            result
+          ])
+        end
+        return MalList([
+          MalSymbol("vec")
+          result
+        ])
+    end
+    MalList([MalSymbol("quote"); input])
+
 
 // this makes compilation slower
 

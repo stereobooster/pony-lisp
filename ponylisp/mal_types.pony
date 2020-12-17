@@ -30,18 +30,19 @@ class MalAtom
 // we need those classes because Pony doesn't support recursive types
 class MalList
   let value: Array[MalType]
-  new create(value': Array[MalType]) =>
-    value = value'
+  new create(value': Array[MalType]) => value = value'
+  // uniuons doesn't work with fields
+  // fun ref get_value(): Array[MalType] => value
 
 class MalVector
   let value: Array[MalType]
-  new create(value': Array[MalType]) =>
-    value = value'
+  new create(value': Array[MalType]) => value = value'
+  // uniuons doesn't work with fields
+  // fun ref get_value(): Array[MalType] => value
 
 class  MalMap
   let value: Map[String, MalType]
-  new create(value': Map[String, MalType]) =>
-    value = value'
+  new create(value': Map[String, MalType]) => value = value'
 
 class  MalLambda
   let arguments: Array[MalSymbol]
@@ -53,6 +54,25 @@ class  MalLambda
     env = env'
 
 primitive MalTypeUtils
+  fun type_of(value: MalType): String val =>
+    match value
+    | None => "nil"
+    | let x: Bool => "Bool"
+    | let x: I64 => "I64"
+    | let x: F64 => "F64"
+    | let x: String => "String"
+    | let x: MalList => "List"
+    | let x: MalVector => "Vector"
+    | let x: MalMap => "Map"
+    | let x: MalSymbol => "Symbol"
+    | let x: MalKeyword => "Keyword"
+    | let x: NativeFunction => "NativeFunction"
+    | let x: MalLambda => "Lambda"
+    | let x: MalAtom => "Atom"
+    | let x: SpecialForm => "SpecialForm"
+    // | let x: SpecialFormTCO => Debug("SpecialFormTCO"); Debug(x.name())
+    end
+
   fun debug_val(value: MalType) =>
     match value
     | None => Debug(None)

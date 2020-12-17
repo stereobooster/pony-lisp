@@ -239,3 +239,41 @@ class ResetExclamationFunction is NativeFunction
     let second = input(1)?
     first.value = second
     second
+
+class ConsFunction is NativeFunction
+  let _eh: EffectHandler
+  new create(r: EffectHandler) => _eh = r
+  fun name(): String => "cons"
+  fun ref apply(input: Array[MalType]): MalType ? =>
+    Decoder(_eh).guard_array_length(2, 2, input)?
+    let first = input(0)?
+    var second = Decoder(_eh).as_list(input(1)?)?.value.clone()
+    second.unshift(first)
+    MalList(second)
+
+class ConcatFunction is NativeFunction
+  let _eh: EffectHandler
+  new create(r: EffectHandler) => _eh = r
+  fun name(): String => "concat"
+  fun ref apply(input: Array[MalType]): MalType ? =>
+    let list: Array[MalList] = Decoder(_eh).as_array_list(input)?
+    let output: Array[MalType] = []
+    for v in list.values() do
+      output.concat(v.value.values())
+    end
+    MalList(output)
+
+class VecFunction is NativeFunction
+  let _eh: EffectHandler
+  new create(r: EffectHandler) => _eh = r
+  fun name(): String => "concat"
+  fun ref apply(input: Array[MalType]): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 1, input)?
+    match input(0)?
+    | let output: MalList => MalVector(output.value)
+    | let output: MalVector => output
+    // | let output: None => MalVector([])
+    else
+      _eh.err("Expected list or vector instead got " + MalTypeUtils.type_of(input(0)?))
+      error
+    end

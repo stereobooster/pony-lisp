@@ -49,6 +49,7 @@ class Mal
     _env.set("eval", EvalFunction(this, _eh))
     _env.set("swap!", SwapExclamationFunction(this, _eh))
     _env.set("quote", QuoteFunction(this, _eh))
+    _env.set("quasiquote", QuasiquoteFunction(this, _eh))
     // add native functions
     _env.set("+", PlusFunction(_eh))
     _env.set("-", MinusFunction(_eh))
@@ -73,6 +74,9 @@ class Mal
     _env.set("atom?", AtomQuestionFunction(_eh))
     _env.set("deref", DerefFunction(_eh))
     _env.set("reset!", ResetExclamationFunction(_eh))
+    _env.set("cons", ConsFunction(_eh))
+    _env.set("concat", ConcatFunction(_eh))
+    _env.set("vec", VecFunction(_eh))
     try
       // add lambdas
       rep("(def! not (fn* (a) (if a false true)))")?
@@ -116,7 +120,8 @@ class Mal
         if list.size() == 0 then
           return None
         end
-        match eval(list(0)?, tco_env)?
+        let first = eval(list(0)?, tco_env)?
+        match first
         | let fn: NativeFunction =>
           let evaluated_input: Array[MalType] = []
           for v in list.slice(1).values() do
@@ -141,7 +146,12 @@ class Mal
             tco_env = consume new_env
             None // to make compiler happy
         else
-          _eh.err("Error: expected function")
+          match list(0)?
+          | let s: MalPrimitive =>
+            _eh.err("Error: " + Printer.print_str(s) + " is not a function (it is " + MalTypeUtils.type_of(first) + ")")
+          else
+            _eh.err("Error: first item in the list is not a function (it is " + MalTypeUtils.type_of(first) + ")")
+          end
           error
         end
       else
@@ -158,7 +168,7 @@ class Mal
     end
 
   fun print(exp: MalType): String =>
-    Printer.print_str(exp)
+    Printer.print_str(exp, true)
 
   fun ref rep (str: String): String ? =>
     print(eval(read(str), _env)?)
