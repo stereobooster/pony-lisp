@@ -45,11 +45,11 @@ class  MalMap
   new create(value': Map[String, MalType]) => value = value'
 
 class  MalLambda
-  let arguments: Array[MalSymbol]
+  let argument_names: Array[MalSymbol]
   let body: MalType
   let env: MalEnv
-  new create(arguments': Array[MalSymbol], body': MalType, env': MalEnv) =>
-    arguments = arguments'
+  new create(argument_names': Array[MalSymbol], body': MalType, env': MalEnv) =>
+    argument_names = argument_names'
     body = body'
     env = env'
 

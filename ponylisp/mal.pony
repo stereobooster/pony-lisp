@@ -121,26 +121,31 @@ class Mal
           return None
         end
         let first = eval(list(0)?, tco_env)?
+        let arguments = list.slice(1)
         match first
         | let fn: NativeFunction =>
           let evaluated_input: Array[MalType] = []
-          for v in list.slice(1).values() do
+          for v in arguments.values() do
             evaluated_input.push(eval(v, tco_env)?)
           end
           return fn.apply(consume evaluated_input)?
         | let fn: SpecialForm =>
-          return fn.apply(list.slice(1), tco_env)?
+          return fn.apply(arguments, tco_env)?
         // | let fn: SpecialFormTCO =>
-        //   let result: (MalType, MalEnv) = fn.apply_tco(list.slice(1), tco_env)?
+        //   let result: (MalType, MalEnv) = fn.apply_tco(arguments, tco_env)?
         //   tco_input = result._1
         //   tco_env = result._2
         //   None // to make compiler happy
         | let fn: MalLambda =>
+            if fn.argument_names.size() != arguments.size() then
+              _eh.err("Error: expected " + fn.argument_names.size().string() + " arguments, got " + arguments.size().string() + ")")
+              error
+            end
             let new_env = MalEnv(fn.env)
-            for (k, v) in fn.arguments.pairs() do
-              new_env.set(v.value, eval(list(k + 1)?, tco_env)?)
+            for (k, v) in arguments.pairs() do
+              new_env.set(fn.argument_names(k)?.value, eval(v, tco_env)?)
               // this doesn't work
-              // new_env.set(v.value, eval(list(k + 1)?, new_env)?)
+              // new_env.set(fn.argument_names(k)?.value, eval(v, new_env)?)
             end
             tco_input = fn.body
             tco_env = consume new_env
