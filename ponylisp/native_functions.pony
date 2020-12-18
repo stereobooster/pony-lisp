@@ -347,3 +347,19 @@ class RestFunction is NativeFunction
       _eh.err("Expected list or vector instead got " + MalTypeUtils.type_of(input(0)?))
       error
     end
+
+class ThrowFunction is NativeFunction
+  let _eh: EffectHandler
+  new create(r: EffectHandler) => _eh = r
+  fun name(): String => "throw"
+  fun ref apply(input: Array[MalType]): MalType ? =>
+    Decoder(_eh).guard_array_length(0, 1, input)?
+    let first = try input(0)? end
+    match first
+    | None => _eh.err(None)
+    | let first': String =>
+      _eh.err(first')
+    else
+      _eh.err(Printer.print_str(first))
+    end
+    error

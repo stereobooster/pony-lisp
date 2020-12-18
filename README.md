@@ -6,6 +6,18 @@ Small experiment: trying to implement [Make-A-Lisp](https://github.com/kanaka/ma
 
 [![CircleCI](https://circleci.com/gh/stereobooster/pony-lisp.svg?style=svg)](https://circleci.com/gh/stereobooster/pony-lisp)
 
+# todo
+
+- ARGV
+- execution via path
+- test mal files
+- error passing instead of imediate printing
+- apply map
+- other
+- readline
+- eval as actor?
+- write blog post
+
 ## Developemnt
 
 - https://tutorial.ponylang.io/

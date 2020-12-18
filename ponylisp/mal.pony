@@ -52,6 +52,7 @@ class Mal
     _env.set("quasiquote", QuasiquoteFunction(this, _eh))
     _env.set("defmacro!", DefmacroExclamationFunction(this, _eh))
     _env.set("macroexpand", MacroexpandFunction(this, _eh))
+    _env.set("try*", TryStarFunction(this, _eh))
     // add native functions
     _env.set("+", PlusFunction(_eh))
     _env.set("-", MinusFunction(_eh))
@@ -82,6 +83,7 @@ class Mal
     _env.set("nth", NthFunction(_eh))
     _env.set("first", FirstFunction(_eh))
     _env.set("rest", RestFunction(_eh))
+    _env.set("throw", ThrowFunction(_eh))
     try
       // add lambdas
       rep("(def! not (fn* (a) (if a false true)))")?

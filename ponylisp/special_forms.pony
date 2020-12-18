@@ -234,6 +234,55 @@ class MacroexpandFunction is SpecialForm
     end
     _e.macroexpand(fn, list.value.slice(1), env)?
 
+class TryStarFunction is SpecialForm
+  let _e: Evaluator
+  let _eh: EffectHandler
+  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  fun name(): String => "try*"
+  fun _as_catch(input: MalType): ((MalSymbol, MalType) | None) ? =>
+    try
+      match input
+      | let list: MalList =>
+        if list.value.size() != 3 then
+          error
+        end
+        match list.value(0)?
+        | let symbol: MalSymbol =>
+          if symbol.value != "catch*" then
+            error
+          end
+        else
+          error
+        end
+        match list.value(1)?
+        | let symbol: MalSymbol =>
+          return (symbol, list.value(2)?)
+        else
+          error
+        end
+      | None => return None
+      else
+        error
+      end
+    else
+      _eh.err("Expected (catch* error handler), instead got " + MalTypeUtils.type_of(input))
+      error
+    end
+
+  fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 2, input)?
+    let catch = _as_catch(try input(1)? end)?
+    try
+      _e.eval(input(0)?, env)?
+    else
+      match catch
+      | (let symbol: MalSymbol, let handler: MalType) =>
+        let new_env = MalEnv(env)
+        // env.set(symbol.value, _eh.last_error())
+        _e.eval(handler, new_env)?
+      end
+    end
+
 // this makes compilation slower
 
 // interface SpecialFormTCO
