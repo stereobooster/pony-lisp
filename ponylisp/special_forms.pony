@@ -6,6 +6,8 @@ interface SpecialForm
 
 interface Evaluator
   fun eval(input: MalType, env: MalEnv): MalType ?
+  // to support macroexpand, not sure this is a good idea
+  fun macroexpand(fn: MalLambda, arguments: Array[MalType], env: MalEnv): MalType ?
 
 class DefExclamationFunction is SpecialForm
   let _e: Evaluator
@@ -26,9 +28,10 @@ class FnStarFunction is SpecialForm
   fun name(): String => "fn*"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
-    let arguments  = Decoder(_eh).as_array_symbol(input(0)?)?
-    // Decoder(_eh).guard_array_unique(arguments)?
-    MalLambda(arguments, input(1)?, env)
+    let argument_names  = Decoder(_eh).as_array_symbol(input(0)?)?
+    // Decoder(_eh).guard_array_unique(argument_names)?
+    // Decoder(_eh).guard_ampersand_before_last(argument_names)?
+    MalLambda(argument_names, input(1)?, env)
 
 class IfFunction is SpecialForm
   let _e: Evaluator
@@ -39,6 +42,12 @@ class IfFunction is SpecialForm
     Decoder(_eh).guard_array_length(2, 3, input)?
     // TODO: customise error message "Error: condition must be bool"
     let condition = Decoder(_eh).as_bool(_e.eval(input(0)?, env)?)?
+    // let condition = match _e.eval(input(0)?, env)?
+    //   | None => false
+    //   | let x: Bool => x
+    // else
+    //   true // ??
+    // end
     let condition_expression: MalType = if condition then
       input(1)?
     else
@@ -196,6 +205,34 @@ class QuasiquoteFunction is SpecialForm
     end
     MalList([MalSymbol("quote"); input])
 
+class DefmacroExclamationFunction is SpecialForm
+  let _e: Evaluator
+  let _eh: EffectHandler
+  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  fun name(): String => "defmacro!"
+  fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
+    Decoder(_eh).guard_array_length(2, 2, input)?
+    let name' = Decoder(_eh).as_symbol(input(0)?)?
+    let output = _e.eval(input(1)?, env)?
+    let fn = Decoder(_eh).as_lambda(output)?
+    // create new lambda to prevent mutation of original lambda in case it was passed as variable
+    let fn' = MalLambda(fn.argument_names, fn.body, fn.env, true)
+    env.set(name'.value, fn')
+    fn'
+
+class MacroexpandFunction is SpecialForm
+  let _e: Evaluator
+  let _eh: EffectHandler
+  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  fun name(): String => "macroexpand"
+  fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 1, input)?
+    let list = Decoder(_eh).as_list(input(0)?)?
+    let fn = Decoder(_eh).as_lambda(_e.eval(list.value(0)?, env)?)?
+    if not fn.is_macro then
+      _eh.err("Expect macro")
+    end
+    _e.macroexpand(fn, list.value.slice(1), env)?
 
 // this makes compilation slower
 
@@ -223,47 +260,6 @@ class QuasiquoteFunction is SpecialForm
 //       end
 //     end
 //     (condition_expression, env)
-
-//   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
-//     let result = apply_tco(input, env)?
-//     let input': MalType = result._1
-//     let env': MalEnv = result._2
-//     _e.eval(input', env')?
-
-// class DoFunction is SpecialFormTCO
-//   let _e: Evaluator
-//   let _eh: EffectHandler
-//   new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
-//   fun name(): String => "do"
-
-//   fun ref apply_tco(input: Array[MalType], env: MalEnv): (MalType, MalEnv) ? =>
-//     Decoder(_eh).guard_array_length(1, USize.max_value(), input)?
-//     let last: MalType = input.pop()?
-//     for v in input.values() do
-//       _e.eval(v, env)?
-//     end
-//     (last, env)
-
-//   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
-//     let result = apply_tco(input, env)?
-//     let input': MalType = result._1
-//     let env': MalEnv = result._2
-//     _e.eval(input', env')?
-
-// class LetStarFunction is SpecialFormTCO
-//   let _e: Evaluator
-//   let _eh: EffectHandler
-//   new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
-//   fun name(): String => "let*"
-
-//   fun ref apply_tco(input: Array[MalType], env: MalEnv): (MalType, MalEnv) ? =>
-//     let variables = Decoder(_eh).as_let_pairs(input(0)?)?
-//     let new_env = MalEnv(env)
-//     for v in variables.values() do
-//       env.set(v._1.value, _e.eval(v._2, new_env)?)
-//     end
-//     let last: MalType = input(1)?
-//     (last, new_env)
 
 //   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
 //     let result = apply_tco(input, env)?

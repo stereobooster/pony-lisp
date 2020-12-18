@@ -50,6 +50,8 @@ class Mal
     _env.set("swap!", SwapExclamationFunction(this, _eh))
     _env.set("quote", QuoteFunction(this, _eh))
     _env.set("quasiquote", QuasiquoteFunction(this, _eh))
+    _env.set("defmacro!", DefmacroExclamationFunction(this, _eh))
+    _env.set("macroexpand", MacroexpandFunction(this, _eh))
     // add native functions
     _env.set("+", PlusFunction(_eh))
     _env.set("-", MinusFunction(_eh))
@@ -77,12 +79,27 @@ class Mal
     _env.set("cons", ConsFunction(_eh))
     _env.set("concat", ConcatFunction(_eh))
     _env.set("vec", VecFunction(_eh))
+    _env.set("nth", NthFunction(_eh))
+    _env.set("first", FirstFunction(_eh))
+    _env.set("rest", RestFunction(_eh))
     try
       // add lambdas
       rep("(def! not (fn* (a) (if a false true)))")?
       rep("""(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)")))))""")?
+      rep("""
+      (defmacro! cond
+        (fn* (& xs)
+          (if (> (count xs) 0)
+            (list 'if (first xs)
+              (if (> (count xs) 1)
+                (nth xs 1)
+                (throw "odd number of forms to cond"))
+              (cons 'cond (rest (rest xs)))))))
+      """)?
       // TODO: need `&` support
       // rep("""(def! swap! (fn* (a, f, &rest) (reset! a (f (deref a) &rest)) ))""")?
+    else
+      _eh.print("Failed to create core functions")
     end
 
   fun _eval_data(input: MalType, env: MalEnv): MalType ? =>
@@ -103,10 +120,85 @@ class Mal
       input
     end
 
+//  fun _indent(level': USize, indent: String = "  "): String iso =>
+//     var level = level'
+//     let buf = recover String(0) end
+//     while level != 0 do
+//       buf.append(indent)
+//       level = level - 1
+//     end
+//     consume buf
+
+  // https://opendsa.cs.vt.edu/ODSA/Books/PL/html/SLang2ParameterPassing.html#macro-expansion
+  fun bind(fn: MalLambda, arguments: Array[MalType], env: MalEnv, is_macro: Bool = false): MalEnv ? =>
+    let argument_names = fn.argument_names
+    let is_rest_argument = (argument_names.size() >= 2) and
+      (argument_names(argument_names.size() - 2)?.value == "&")
+    if argument_names.size() != arguments.size() then
+      let min_arguments = if is_rest_argument then argument_names.size() - 2 else argument_names.size() end
+      let max_arguments = if is_rest_argument then USize.max_value() else argument_names.size() end
+      if (arguments.size() < min_arguments) or (arguments.size() > max_arguments) then
+        if min_arguments == max_arguments then
+          _eh.err("Error: expected " + min_arguments.string() + " arguments, got " + arguments.size().string() + ")")
+        else
+          _eh.err("Error: expected at least " + min_arguments.string() + " arguments, got " + arguments.size().string() + ")")
+        end
+        error
+      end
+    end
+    let new_env = MalEnv(fn.env)
+    let rest_argument_value = Array[MalType]
+    for (k, v) in arguments.pairs() do
+      let argument_value = if is_macro then v else eval(v, env)? end
+      if is_rest_argument and (k >= (argument_names.size() - 2)) then
+        rest_argument_value.push(argument_value)
+      else
+        new_env.set(argument_names(k)?.value, argument_value)
+      end
+    end
+    if is_rest_argument then
+      new_env.set(argument_names(argument_names.size() - 1)?.value,
+        MalList(rest_argument_value))
+    end
+    consume new_env
+
+  fun macroexpand(fn: MalLambda, arguments: Array[MalType], env: MalEnv): MalType ? =>
+    var fn' = fn
+    var arguments' = arguments
+    while true do
+      let result = eval(fn'.body, bind(fn', arguments', env, true)?)?
+      match result
+      | let list: MalList =>
+        if list.value.size() == 0 then
+          return result
+        end
+        match list.value(0)?
+        | let first: MalSymbol =>
+          match try env.get(first.value)? end
+          | let first': MalLambda =>
+            if first'.is_macro then
+              fn' = first'
+              arguments' = list.value.slice(1)
+              continue
+            end
+          end
+        end
+      end
+      return result
+    end
+
+
   fun eval(input: MalType, env: MalEnv): MalType ? =>
     var tco_input: MalType = consume input
     var tco_env: MalEnv = consume env
+    // var counter: USize = 0
     while true do
+      // _eh.print(_indent(tco_env.depth + counter) +
+      //   Printer.print_str(tco_input))
+      // counter = counter + 1
+      // try
+      //   _eh.print(Printer.print_str(tco_env.get("xs")?))
+      // end
       match tco_input
       | let input': MalSymbol =>
         try
@@ -118,7 +210,8 @@ class Mal
       | let input': MalList =>
         let list = input'.value
         if list.size() == 0 then
-          return None
+          // return None
+          return MalList([])
         end
         let first = eval(list(0)?, tco_env)?
         let arguments = list.slice(1)
@@ -135,21 +228,16 @@ class Mal
         //   let result: (MalType, MalEnv) = fn.apply_tco(arguments, tco_env)?
         //   tco_input = result._1
         //   tco_env = result._2
-        //   None // to make compiler happy
+        //   continue
         | let fn: MalLambda =>
-            if fn.argument_names.size() != arguments.size() then
-              _eh.err("Error: expected " + fn.argument_names.size().string() + " arguments, got " + arguments.size().string() + ")")
-              error
-            end
-            let new_env = MalEnv(fn.env)
-            for (k, v) in arguments.pairs() do
-              new_env.set(fn.argument_names(k)?.value, eval(v, tco_env)?)
-              // this doesn't work
-              // new_env.set(fn.argument_names(k)?.value, eval(v, new_env)?)
-            end
-            tco_input = fn.body
-            tco_env = consume new_env
-            None // to make compiler happy
+          if fn.is_macro then
+            // tco_env = tco_env
+            tco_input = macroexpand(fn, arguments, tco_env)?
+          else
+            tco_env = bind(fn, arguments, tco_env)?
+            tco_input =fn.body
+          end
+          continue
         else
           match list(0)?
           | let s: MalPrimitive =>

@@ -59,6 +59,14 @@ class Decoder
       error
     end
 
+  fun ref as_lambda(input: MalType): MalLambda ? =>
+    match input
+    | let output: MalLambda => output
+    else
+      _eh.err("Expected function instead got " + MalTypeUtils.type_of(input))
+      error
+    end
+
   fun ref as_array_symbol(input: (MalType | Array[MalType])): Array[MalSymbol] ? =>
     match input
     | let output: MalList => as_array_symbol(output.value)?

@@ -277,3 +277,73 @@ class VecFunction is NativeFunction
       _eh.err("Expected list or vector instead got " + MalTypeUtils.type_of(input(0)?))
       error
     end
+
+class NthFunction is NativeFunction
+  let _eh: EffectHandler
+  new create(r: EffectHandler) => _eh = r
+  fun name(): String => "nth"
+  fun ref apply(input: Array[MalType]): MalType ? =>
+    Decoder(_eh).guard_array_length(2, 2, input)?
+    let index = USize.from[I64](Decoder(_eh).as_integer(input(1)?)?)
+    match input(0)?
+    | let output: MalList =>
+      try
+        output.value(index)?
+      else
+        _eh.err("Out of range " + index.string())
+        error
+      end
+    | let output: MalVector =>
+      try
+        output.value(index)?
+      else
+        _eh.err("Out of range " + index.string())
+        error
+      end
+    // | let output: None => MalVector([])
+    else
+      _eh.err("Expected list or vector instead got " + MalTypeUtils.type_of(input(0)?))
+      error
+    end
+
+class FirstFunction is NativeFunction
+  let _eh: EffectHandler
+  new create(r: EffectHandler) => _eh = r
+  fun name(): String => "first"
+  fun ref apply(input: Array[MalType]): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 1, input)?
+    match input(0)?
+    | let output: MalList =>
+      try
+        output.value(0)?
+      else
+        None
+      end
+    | let output: MalVector =>
+      try
+        output.value(0)?
+      else
+        None
+      end
+    | let output: None => None
+    else
+      _eh.err("Expected list or vector instead got " + MalTypeUtils.type_of(input(0)?))
+      error
+    end
+
+class RestFunction is NativeFunction
+  let _eh: EffectHandler
+  new create(r: EffectHandler) => _eh = r
+  fun name(): String => "rest"
+  fun ref apply(input: Array[MalType]): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 1, input)?
+    match input(0)?
+    | let output: MalList =>
+      MalList(output.value.slice(1))
+    | let output: MalVector =>
+      MalList(output.value.slice(1))
+    | let output: None => MalList([])
+    else
+      _eh.err("Expected list or vector instead got " + MalTypeUtils.type_of(input(0)?))
+      error
+    end

@@ -48,10 +48,12 @@ class  MalLambda
   let argument_names: Array[MalSymbol]
   let body: MalType
   let env: MalEnv
-  new create(argument_names': Array[MalSymbol], body': MalType, env': MalEnv) =>
+  let is_macro: Bool
+  new create(argument_names': Array[MalSymbol], body': MalType, env': MalEnv, is_macro': Bool = false) =>
     argument_names = argument_names'
     body = body'
     env = env'
+    is_macro = is_macro'
 
 primitive MalTypeUtils
   fun type_of(value: MalType): String val =>

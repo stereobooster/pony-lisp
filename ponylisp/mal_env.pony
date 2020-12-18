@@ -5,10 +5,15 @@ type MalEnvData is (Map[String, MalType])
 class MalEnv
   let _data: MalEnvData
   let _outer: (MalEnv | None)
+  // let depth: USize
 
   new create(outer: (MalEnv | None) = None, data: MalEnvData = MalEnvData(0)) =>
     _data = data
     _outer = outer
+    // depth = match _outer
+    // | None => 0
+    // | let x: MalEnv => x.depth + 1
+    // end
 
   fun ref get(key: String): MalType ? =>
     if _data.contains(key) then
