@@ -8,9 +8,6 @@ Small experiment: trying to implement [Make-A-Lisp](https://github.com/kanaka/ma
 
 # todo
 
-- ARGV
-- execution via path
-- test mal files
 - error passing instead of imediate printing
 - apply map
 - other

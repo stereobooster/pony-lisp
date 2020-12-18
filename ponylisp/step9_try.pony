@@ -10,7 +10,8 @@ class Handler is ReadlineNotify
 
   new iso create(env: Env) =>
     _out = env.out
-    _mal = Mal(EffectHandler(env.out, env.root))
+    // I tried to pass it outside, but error messages are killing me
+    _mal = Mal(StandardEffectHandler(env))
 
   fun ref apply(line: String, prompt: Promise[String]) =>
     try
@@ -23,14 +24,29 @@ class Handler is ReadlineNotify
 
 actor Main
   new create(env: Env) =>
-    let handler = Handler(env)
-    let readline = Readline(consume handler, env.out)
-    let term = ANSITerm(consume readline, env.input)
-    term.prompt("user> ")
+    let mal = Mal(StandardEffectHandler(env))
 
-    let notify = object iso
-      fun ref apply(data: Array[U8] iso) => term(consume data)
-      fun ref dispose() => term.dispose()
+    let start_loop = try
+      // because make file passes arguments --exclude=integration --sequential
+      env.args(1)?(0)? == '-'
+    else
+      true
     end
 
-    env.input(consume notify)
+    if start_loop then
+      let handler = Handler(env)
+      let readline = Readline(consume handler, env.out)
+      let term = ANSITerm(consume readline, env.input)
+      term.prompt("user> ")
+      let notify = object iso
+        fun ref apply(data: Array[U8] iso) => term(consume data)
+        fun ref dispose() => term.dispose()
+      end
+      env.input(consume notify)
+    else
+      try
+        mal.execute(env.args)?
+      else
+        env.exitcode(1)
+      end
+    end

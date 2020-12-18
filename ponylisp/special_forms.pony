@@ -11,8 +11,8 @@ interface Evaluator
 
 class DefExclamationFunction is SpecialForm
   let _e: Evaluator
-  let _eh: EffectHandler
-  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  let _eh: MallEffectHandler
+  new create(e: Evaluator, eh: MallEffectHandler) => _e = e; _eh = eh
   fun name(): String => "def!"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
@@ -23,8 +23,8 @@ class DefExclamationFunction is SpecialForm
 
 class FnStarFunction is SpecialForm
   let _e: Evaluator
-  let _eh: EffectHandler
-  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  let _eh: MallEffectHandler
+  new create(e: Evaluator, eh: MallEffectHandler) => _e = e; _eh = eh
   fun name(): String => "fn*"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
@@ -35,8 +35,8 @@ class FnStarFunction is SpecialForm
 
 class IfFunction is SpecialForm
   let _e: Evaluator
-  let _eh: EffectHandler
-  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  let _eh: MallEffectHandler
+  new create(e: Evaluator, eh: MallEffectHandler) => _e = e; _eh = eh
   fun name(): String => "if"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
     Decoder(_eh).guard_array_length(2, 3, input)?
@@ -61,8 +61,8 @@ class IfFunction is SpecialForm
 
 class DoFunction is SpecialForm
   let _e: Evaluator
-  let _eh: EffectHandler
-  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  let _eh: MallEffectHandler
+  new create(e: Evaluator, eh: MallEffectHandler) => _e = e; _eh = eh
   fun name(): String => "do"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
     Decoder(_eh).guard_array_length(1, USize.max_value(), input)?
@@ -74,8 +74,8 @@ class DoFunction is SpecialForm
 
 class LetStarFunction is SpecialForm
   let _e: Evaluator
-  let _eh: EffectHandler
-  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  let _eh: MallEffectHandler
+  new create(e: Evaluator, eh: MallEffectHandler) => _e = e; _eh = eh
   fun name(): String => "let*"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
     let variables = Decoder(_eh).as_let_pairs(input(0)?)?
@@ -88,8 +88,8 @@ class LetStarFunction is SpecialForm
 
 class EvalFunction is SpecialForm
   let _e: Evaluator
-  let _eh: EffectHandler
-  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  let _eh: MallEffectHandler
+  new create(e: Evaluator, eh: MallEffectHandler) => _e = e; _eh = eh
   fun name(): String => "eval"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
     Decoder(_eh).guard_array_length(1, 1, input)?
@@ -98,8 +98,8 @@ class EvalFunction is SpecialForm
 // TODO: write it in lisp instead
 class SwapExclamationFunction is SpecialForm
   let _e: Evaluator
-  let _eh: EffectHandler
-  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  let _eh: MallEffectHandler
+  new create(e: Evaluator, eh: MallEffectHandler) => _e = e; _eh = eh
   fun name(): String => "swap!"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
     Decoder(_eh).guard_array_length(2, USize.max_value(), input)?
@@ -115,8 +115,8 @@ class SwapExclamationFunction is SpecialForm
 
 class QuoteFunction is SpecialForm
   let _e: Evaluator
-  let _eh: EffectHandler
-  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  let _eh: MallEffectHandler
+  new create(e: Evaluator, eh: MallEffectHandler) => _e = e; _eh = eh
   fun name(): String => "quote"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
     Decoder(_eh).guard_array_length(1, 1, input)?
@@ -124,8 +124,8 @@ class QuoteFunction is SpecialForm
 
 class QuasiquoteFunction is SpecialForm
   let _e: Evaluator
-  let _eh: EffectHandler
-  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  let _eh: MallEffectHandler
+  new create(e: Evaluator, eh: MallEffectHandler) => _e = e; _eh = eh
   fun name(): String => "quasiquote"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
     Decoder(_eh).guard_array_length(1, 1, input)?
@@ -207,8 +207,8 @@ class QuasiquoteFunction is SpecialForm
 
 class DefmacroExclamationFunction is SpecialForm
   let _e: Evaluator
-  let _eh: EffectHandler
-  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  let _eh: MallEffectHandler
+  new create(e: Evaluator, eh: MallEffectHandler) => _e = e; _eh = eh
   fun name(): String => "defmacro!"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
@@ -222,8 +222,8 @@ class DefmacroExclamationFunction is SpecialForm
 
 class MacroexpandFunction is SpecialForm
   let _e: Evaluator
-  let _eh: EffectHandler
-  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  let _eh: MallEffectHandler
+  new create(e: Evaluator, eh: MallEffectHandler) => _e = e; _eh = eh
   fun name(): String => "macroexpand"
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
     Decoder(_eh).guard_array_length(1, 1, input)?
@@ -236,8 +236,8 @@ class MacroexpandFunction is SpecialForm
 
 class TryStarFunction is SpecialForm
   let _e: Evaluator
-  let _eh: EffectHandler
-  new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+  let _eh: MallEffectHandler
+  new create(e: Evaluator, eh: MallEffectHandler) => _e = e; _eh = eh
   fun name(): String => "try*"
   fun _as_catch(input: MalType): ((MalSymbol, MalType) | None) ? =>
     try
@@ -291,8 +291,8 @@ class TryStarFunction is SpecialForm
 
 // class IfFunction is SpecialFormTCO
 //   let _e: Evaluator
-//   let _eh: EffectHandler
-//   new create(e: Evaluator, eh: EffectHandler) => _e = e; _eh = eh
+//   let _eh: MallEffectHandler
+//   new create(e: Evaluator, eh: MallEffectHandler) => _e = e; _eh = eh
 //   fun name(): String => "if"
 
 //   fun ref apply_tco(input: Array[MalType], env: MalEnv): (MalType, MalEnv) ? =>

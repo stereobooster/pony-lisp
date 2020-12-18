@@ -1,42 +1,11 @@
 use "collections"
-use "files"
-// use "debug"
-
-// Object that provides handlers for I/O, Error
-class EffectHandler
-  // var _error: (String | None) = None
-  let _out: OutStream
-  let _root: (AmbientAuth | None)
-  new create(out: OutStream, root: (AmbientAuth | None)) =>
-    _out = out
-    _root = root
-  // TODO: TypeError, RuntimeError, SyntaxError
-  fun err(e: (String | None)) =>
-    // temp solution
-    _out.print(e.string())
-    // _error = consume e
-  fun print(str: String) =>
-    _out.print(str)
-  fun read_file(file_name: String): String ? =>
-    let path = FilePath(_root as AmbientAuth, file_name)?
-    // Debug(path.string())
-    var buf = ""
-    match OpenFile(path)
-    | let file: File =>
-      while file.errno() is FileOK do
-        buf = buf + file.read_string(1024)
-      end
-    else
-      error
-    end
-    buf
 
 // can this be an actor?
 class Mal
   let _env: MalEnv
-  let _eh: EffectHandler
+  let _eh: MallEffectHandler
 
-  new create(effect_handler: EffectHandler) =>
+  new create(effect_handler: MallEffectHandler) =>
     _eh = effect_handler
     // can't move `this` and `_eh` out of constructor because of refcap
     _env = MalEnv()
@@ -102,6 +71,17 @@ class Mal
       // rep("""(def! swap! (fn* (a, f, &rest) (reset! a (f (deref a) &rest)) ))""")?
     else
       _eh.print("Failed to create core functions")
+    end
+
+  fun ref execute(args: Array[String val] val) ? =>
+    // I don't understand why I can't pass args to MalList
+    let arr: Array[MalType] = []
+    for v in args.values() do
+      arr.push(v)
+    end
+    _env.set("*ARGV*", MalList(arr.slice(2)))
+    if args.size() >= 2 then
+      rep("(load-file " + Printer.print_str(args(1)?, true) + ")")?
     end
 
   fun _eval_data(input: MalType, env: MalEnv): MalType ? =>

@@ -6,8 +6,8 @@ interface NativeFunction
   fun ref apply(input: Array[MalType]): MalType ?
 
 class PlusFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "+"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
@@ -16,8 +16,8 @@ class PlusFunction is NativeFunction
       .fold[I64](0, {(acc, x) => acc + x })
 
 class MinusFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "-"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
@@ -25,8 +25,8 @@ class MinusFunction is NativeFunction
     arguments(0)? - arguments(1)?
 
 class MultiplyFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "*"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
@@ -35,8 +35,8 @@ class MultiplyFunction is NativeFunction
       .fold[I64](1, {(acc, x) => acc * x })
 
 class DivideFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "/"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
@@ -44,16 +44,16 @@ class DivideFunction is NativeFunction
     arguments(0)? / arguments(1)?
 
 class ListFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "list"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).empty_guard()?
     MalList(input)
 
 class ListQuestionFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "list?"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(1, 1, input)?
@@ -62,8 +62,8 @@ class ListQuestionFunction is NativeFunction
     else false end
 
 class EmptyQuestionFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "empty?"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(1, 1, input)?
@@ -71,8 +71,8 @@ class EmptyQuestionFunction is NativeFunction
     output.value.size() == 0
 
 class CountFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "count"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(1, 1, input)?
@@ -80,8 +80,8 @@ class CountFunction is NativeFunction
     I64.from[USize](output.value.size())
 
 class EqualFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "="
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
@@ -92,8 +92,8 @@ class EqualFunction is NativeFunction
 
 // TODO: support strings, floats
 class LessFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "<"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
@@ -102,8 +102,8 @@ class LessFunction is NativeFunction
     first < second
 
 class LessOrEqualFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "<="
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
@@ -112,8 +112,8 @@ class LessOrEqualFunction is NativeFunction
     first <= second
 
 class MoreFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => ">"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
@@ -122,8 +122,8 @@ class MoreFunction is NativeFunction
     first > second
 
 class MoreOrEqualFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => ">="
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
@@ -132,8 +132,8 @@ class MoreOrEqualFunction is NativeFunction
     first >= second
 
 class PrStrFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "pr-str"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).empty_guard()?
@@ -142,8 +142,8 @@ class PrStrFunction is NativeFunction
         {(buf, x) => buf + Printer.print_str(x, true) + " " })
 
 class StrFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "str"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).empty_guard()?
@@ -152,8 +152,8 @@ class StrFunction is NativeFunction
         {(buf, x) => buf + Printer.print_str(x, false) })
 
 class PrnFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "prn"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).empty_guard()?
@@ -164,8 +164,8 @@ class PrnFunction is NativeFunction
     None
 
 class PrintlnFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "println"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).empty_guard()?
@@ -176,8 +176,8 @@ class PrintlnFunction is NativeFunction
     None
 
 class ReadStringFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "read-string"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(1, 1, input)?
@@ -190,8 +190,8 @@ class ReadStringFunction is NativeFunction
     end
 
 class SlurpFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "slurp"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(1, 1, input)?
@@ -203,16 +203,16 @@ class SlurpFunction is NativeFunction
     end
 
 class AtomFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "atom"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(1, 1, input)?
     MalAtom(input(0)?)
 
 class AtomQuestionFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "atom?"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(1, 1, input)?
@@ -221,8 +221,8 @@ class AtomQuestionFunction is NativeFunction
     else false end
 
 class DerefFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "deref"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(1, 1, input)?
@@ -230,8 +230,8 @@ class DerefFunction is NativeFunction
     first.value
 
 class ResetExclamationFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "reset!"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
@@ -241,8 +241,8 @@ class ResetExclamationFunction is NativeFunction
     second
 
 class ConsFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "cons"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
@@ -252,8 +252,8 @@ class ConsFunction is NativeFunction
     MalList(second)
 
 class ConcatFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "concat"
   fun ref apply(input: Array[MalType]): MalType ? =>
     let list: Array[MalList] = Decoder(_eh).as_array_list(input)?
@@ -264,8 +264,8 @@ class ConcatFunction is NativeFunction
     MalList(output)
 
 class VecFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "concat"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(1, 1, input)?
@@ -279,8 +279,8 @@ class VecFunction is NativeFunction
     end
 
 class NthFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "nth"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
@@ -307,8 +307,8 @@ class NthFunction is NativeFunction
     end
 
 class FirstFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "first"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(1, 1, input)?
@@ -332,8 +332,8 @@ class FirstFunction is NativeFunction
     end
 
 class RestFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "rest"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(1, 1, input)?
@@ -349,8 +349,8 @@ class RestFunction is NativeFunction
     end
 
 class ThrowFunction is NativeFunction
-  let _eh: EffectHandler
-  new create(r: EffectHandler) => _eh = r
+  let _eh: MallEffectHandler
+  new create(r: MallEffectHandler) => _eh = r
   fun name(): String => "throw"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(0, 1, input)?

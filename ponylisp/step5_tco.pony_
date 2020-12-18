@@ -10,7 +10,7 @@ class Handler is ReadlineNotify
 
   new iso create(env: Env) =>
     _out = env.out
-    _mal = Mal(EffectHandler(env.out, env.root))
+    _mal = Mal(MallEffectHandler(env.out, env.root))
 
   fun ref apply(line: String, prompt: Promise[String]) =>
     try
