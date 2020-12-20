@@ -51,6 +51,19 @@ TAGS:
 	ctags -R -f .tags
 	# ctags --recurse=yes $(SRC_DIR)
 
+test-mal:
+	# python runtest.py tests/step0_repl.mal build/release/ponylisp
+	# python runtest.py tests/step1_read_print.mal build/release/ponylisp
+	# python runtest.py tests/step2_eval.mal build/release/ponylisp
+	# python runtest.py tests/step3_env.mal build/release/ponylisp
+	python runtest.py tests/step4_if_fn_do.mal build/release/ponylisp
+	# python runtest.py tests/step5_tco.mal build/release/ponylisp
+	# python runtest.py tests/step6_file.mal build/release/ponylisp
+	# python runtest.py tests/step7_quote.mal build/release/ponylisp
+	# python runtest.py tests/step8_macros.mal build/release/ponylisp
+	# python runtest.py tests/step9_try.mal build/release/ponylisp
+	# python runtest.py tests/stepA_mal.mal build/release/ponylisp
+
 all: clean test
 
 $(BUILD_DIR):

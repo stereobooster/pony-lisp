@@ -1,6 +1,5 @@
 use "regex"
 use "collections"
-use "debug"
 use "json"
 
 // There seems to ba a bug in Pony type checker - it doesn't allow me to use MalAst here
@@ -54,10 +53,13 @@ class Reader
   let _integer_r: Regex
   let _float_r: Regex
   let _string_r: Regex
-  new create() ? =>
+  let _eh: ErrorHandler
+
+  new create(eh: ErrorHandler) ? =>
     _integer_r = Regex("^-?[0-9]+$")?
     _float_r = Regex("^-?[0-9][0-9.]*$")?
     _string_r = Regex(""""(?:[\\].|[^\\"])*"""")?
+    _eh = eh
 
   fun read_primitive(stream: TokenStream): MalPrimitive ? =>
     let token = stream.next()?
@@ -80,7 +82,7 @@ class Reader
     else
       match token(0)?
       | '"' =>
-        Debug("expected '\"', got EOF")
+        _eh.err("expected '\"', got EOF")
         error
       // "\u029e" is ʞ, not sure why MAL chose to do it this way
       // | ':' => ";\u029e" + token.cut(0, 1)
@@ -95,7 +97,7 @@ class Reader
     let list: Array[MalType] = []
     var token = stream.next()?
     if token != start then
-      Debug("expected '" + start + "'")
+      _eh.err("expected '" + start + "'")
       error
     end
     try
@@ -104,7 +106,7 @@ class Reader
         list.push(x)
       end
     else
-      Debug("expected '" + finish + "', got EOF")
+      _eh.err("expected '" + finish + "', got EOF")
       error
     end
     stream.next()?
@@ -119,7 +121,7 @@ class Reader
   fun read_hash_map(stream: TokenStream): MalMap ? =>
     let list = read_sequence(stream, "{", "}")?
     if (list.size() %% 2) == 1 then
-      Debug("odd number of hash map arguments")
+      _eh.err("odd number of hash map arguments")
       error
     end
     let hash = Map[String, MalType](list.size()/2)
@@ -127,9 +129,10 @@ class Reader
     while i < list.size() do
       match list(i)?
       | let key: String => hash(key) = list(i+1)?
+      | let key: MalKeyword => hash(key.value) = list(i+1)?
       // | let key: MalSymbol => hash(key.value) = list(i+1)?
       else
-        Debug("key not a string")
+        _eh.err("key not a string")
         error
       end
       i = i + 2
@@ -156,19 +159,19 @@ class Reader
 
     // list
     | ")" =>
-      Debug("unexpected ')'")
+      _eh.err("unexpected ')'")
       error
     | "(" => read_list(stream)?
 
     // vector
     | "]" =>
-      Debug("unexpected ']'")
+      _eh.err("unexpected ']'")
       error
     | "[" => read_vector(stream)?
 
     // hash-map
     | "}" =>
-      Debug("unexpected '}'")
+      _eh.err("unexpected '}'")
       error
     | "{" => read_hash_map(stream)?
 
@@ -179,7 +182,7 @@ class Reader
   fun read_str(str: String): MalType ? =>
     let tokens = Tokenizer.tokenize(str)?
     if tokens.size() == 0 then
-      Debug("empty input")
+      _eh.err("empty input")
       None
     end
     read_form(TokenStream(tokens))?

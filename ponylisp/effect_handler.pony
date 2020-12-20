@@ -1,10 +1,15 @@
 use "files"
 
-interface MallEffectHandler
+interface IOHandler
   // TODO: TypeError, RuntimeError, SyntaxError
-  fun err(e: (String | None))
   fun print(str: String)
   fun read_file(file_name: String): String ?
+
+interface ErrorHandler
+  // TODO: TypeError, RuntimeError, SyntaxError
+  fun err(e: (String | None))
+
+type MallEffectHandler is (IOHandler & ErrorHandler)
 
 // Object that provides handlers for I/O, Error
 class StandardEffectHandler is MallEffectHandler

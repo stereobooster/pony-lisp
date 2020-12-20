@@ -1,10 +1,10 @@
 use "collections"
 
 class Decoder
-  let _eh: MallEffectHandler
+  let _eh: ErrorHandler
 
   // TODO: Assertion error (expected, got)
-  new create(effect_handler: MallEffectHandler) =>
+  new create(effect_handler: ErrorHandler) =>
     _eh = effect_handler
 
   fun ref as_symbol(input: MalType): MalSymbol ? =>

@@ -14,10 +14,10 @@ RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/inst
 
 # ctags
 
-RUN \
-  add-apt-repository ppa:hadret/fswatch && \
-  apt-get update && \
-  apt-get install fswatch -y
+# RUN \
+#   add-apt-repository ppa:hadret/fswatch && \
+#   apt-get update && \
+#   apt-get install fswatch -y
 
 RUN apt-get install -y ctags
 
@@ -27,6 +27,9 @@ RUN \
   apt-get install -y apt-utils 2>&1 | grep -v "debconf: delaying package configuration, since apt-utils is not installed" && \
   apt-get install -y --no-install-recommends libpcre2-dev
 
+# to run tests
+
+RUN apt-get install -y python
 
 # ENV TZ=Europe/Berlin
 # RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone

@@ -190,7 +190,7 @@ class Mal
         try
           return tco_env.get(input'.value)?
         else
-          _eh.err("Error: Variable not found " + input'.value)
+          _eh.err(input'.value + " not found")
           error
         end
       | let input': MalList =>
@@ -238,12 +238,10 @@ class Mal
       end
     end
 
-  fun read(str: String): MalType =>
+  fun ref read(str: String): MalType =>
     try
-      let reader = Reader.create()?
+      let reader = Reader.create(_eh)?
       reader.read_str(str)?
-    else
-      _eh.err("Read error")
     end
 
   fun print(exp: MalType): String =>
