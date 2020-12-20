@@ -278,6 +278,7 @@ class TryStarFunction is SpecialForm
       match catch
       | (let symbol: MalSymbol, let handler: MalType) =>
         let new_env = MalEnv(env)
+        env.set(symbol.value, None)
         // env.set(symbol.value, _eh.last_error())
         _e.eval(handler, new_env)?
       end

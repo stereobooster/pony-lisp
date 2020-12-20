@@ -67,11 +67,15 @@ class Mal
                 (throw "odd number of forms to cond"))
               (cons 'cond (rest (rest xs)))))))
       """)?
+      rep("(def! nil? (fn* (a) (= a nil)))")?
+      rep("(def! true? (fn* (a) a))")?
+      rep("(def! false? (fn* (a) (= a false)))")?
       // TODO: need `&` support
       // rep("""(def! swap! (fn* (a, f, &rest) (reset! a (f (deref a) &rest)) ))""")?
     else
       _eh.print("Failed to create core functions")
     end
+    _env.set("*host-language*", "pony")
 
   fun ref execute(args: Array[String val] val) ? =>
     // I don't understand why I can't pass args to MalList

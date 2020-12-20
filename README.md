@@ -2,18 +2,22 @@
 
 Small experiment: trying to implement [Make-A-Lisp](https://github.com/kanaka/mal/blob/master/process/guide.md) in Pony.
 
-## Status
+Read those blog posts for more details:
 
-[![CircleCI](https://circleci.com/gh/stereobooster/pony-lisp.svg?style=svg)](https://circleci.com/gh/stereobooster/pony-lisp)
+1. [Make a Lisp - review](https://stereobooster.com/posts/make-a-lisp-review/)
+2. [My experience of writing Lisp in Pony](https://stereobooster.com/posts/my-experience-of-writing-lisp-in-pony/)
 
-# todo
+## TODO
 
 - error passing instead of imediate printing
 - apply map
 - other
 - readline
 - eval as actor?
-- write blog post
+
+## Status
+
+[![CircleCI](https://circleci.com/gh/stereobooster/pony-lisp.svg?style=svg)](https://circleci.com/gh/stereobooster/pony-lisp)
 
 ## Developemnt
 
@@ -42,14 +46,3 @@ Small experiment: trying to implement [Make-A-Lisp](https://github.com/kanaka/ma
 
 - https://marketplace.visualstudio.com/items?itemName=mads-hartmann.yassnippet
 - https://github.com/ponylang/pony-snippets
-
-## Pony first impression
-
-- No recursive types, need to use classes instead
-- No way to pass error message with exception (`error`) https://github.com/ponylang/rfcs/pull/76
-- Hard to read error messages
-- `SomeClass` will create instance of a given calss, the same as `SomeClass()` (but second requires `new create`)
-- `_` is for private fields
-- https://github.com/ponylang/ponyc/blob/92601857ef5c174355828341a7181cb5b35f99fd/src/libponyc/type/cap.c
-- https://tutorial.ponylang.io/appendices/symbol-lookup-cheatsheet.html
-- https://github.com/ponylang/ponyc/tree/master/examples

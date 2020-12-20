@@ -37,6 +37,9 @@ actor Main
       let handler = Handler(env)
       let readline = Readline(consume handler, env.out)
       let term = ANSITerm(consume readline, env.input)
+      try
+        mal.rep("(println (str \"Mal [\" *host-language* \"]\"))")?
+      end
       term.prompt("user> ")
       let notify = object iso
         fun ref apply(data: Array[U8] iso) => term(consume data)
