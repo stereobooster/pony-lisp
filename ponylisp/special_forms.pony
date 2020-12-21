@@ -122,17 +122,9 @@ class QuoteFunction is SpecialForm
     Decoder(_eh).guard_array_length(1, 1, input)?
     input(0)?
 
-class QuasiquoteFunction is SpecialForm
-  let _e: Evaluator
-  let _eh: ErrorHandler
-  new create(e: Evaluator, eh: ErrorHandler) => _e = e; _eh = eh
-  fun name(): String => "quasiquote"
-  fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
-    Decoder(_eh).guard_array_length(1, 1, input)?
-    _e.eval(expand(input(0)?, env)?, env)?
-
+primitive QuasiquoteUtil
   // I regret I wrote this
-  fun ref expand(input: MalType, env: MalEnv): MalType ? =>
+  fun expand(input: MalType, env: MalEnv): MalType ? =>
     match input
     | let list: MalList =>
       if list.value.size() == 0 then
@@ -145,7 +137,6 @@ class QuasiquoteFunction is SpecialForm
       end
       var result: MalList = MalList([])
       for v in list.value.reverse().values() do
-        // _eh.print(Printer.print_str(result))
         match v
         | let v': MalList =>
           if v'.value.size() != 0 then
@@ -171,11 +162,13 @@ class QuasiquoteFunction is SpecialForm
       return result
       | let list: MalVector =>
         if list.value.size() == 0 then
-          return list
+          return MalList([
+            MalSymbol("vec")
+            MalList([])
+          ])
         end
         var result: MalList = MalList([])
         for v in list.value.reverse().values() do
-          // _eh.print(Printer.print_str(result))
           match v
           | let v': MalList =>
             if v'.value.size() != 0 then
@@ -202,8 +195,28 @@ class QuasiquoteFunction is SpecialForm
           MalSymbol("vec")
           result
         ])
+    | let x: MalList => if x.value.size() == 0 then return x end
+    | let x: (I64|F64|None) => return x
     end
     MalList([MalSymbol("quote"); input])
+
+class QuasiquoteFunction is SpecialForm
+  let _e: Evaluator
+  let _eh: ErrorHandler
+  new create(e: Evaluator, eh: ErrorHandler) => _e = e; _eh = eh
+  fun name(): String => "quasiquote"
+  fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 1, input)?
+    _e.eval(QuasiquoteUtil.expand(input(0)?, env)?, env)?
+
+class QuasiquoteExpandFunction is SpecialForm
+  let _e: Evaluator
+  let _eh: ErrorHandler
+  new create(e: Evaluator, eh: ErrorHandler) => _e = e; _eh = eh
+  fun name(): String => "quasiquoteexpand"
+  fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
+    Decoder(_eh).guard_array_length(1, 1, input)?
+    QuasiquoteUtil.expand(input(0)?, env)?
 
 class DefmacroExclamationFunction is SpecialForm
   let _e: Evaluator

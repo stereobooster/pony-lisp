@@ -19,6 +19,7 @@ class Mal
     _env.set("swap!", SwapExclamationFunction(this, _eh))
     _env.set("quote", QuoteFunction(this, _eh))
     _env.set("quasiquote", QuasiquoteFunction(this, _eh))
+    _env.set("quasiquoteexpand", QuasiquoteExpandFunction(this, _eh))
     _env.set("defmacro!", DefmacroExclamationFunction(this, _eh))
     _env.set("macroexpand", MacroexpandFunction(this, _eh))
     _env.set("try*", TryStarFunction(this, _eh))
