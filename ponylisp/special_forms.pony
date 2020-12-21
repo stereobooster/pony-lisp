@@ -41,7 +41,7 @@ class IfFunction is SpecialForm
   fun ref apply(input: Array[MalType], env: MalEnv): MalType ? =>
     Decoder(_eh).guard_array_length(2, 3, input)?
     // TODO: customise error message "Error: condition must be bool"
-    let condition = Decoder(_eh).as_bool(_e.eval(input(0)?, env)?)?
+    let condition = Decoder(_eh).as_truthy(_e.eval(input(0)?, env)?)
     // let condition = match _e.eval(input(0)?, env)?
     //   | None => false
     //   | let x: Bool => x
@@ -299,7 +299,7 @@ class TryStarFunction is SpecialForm
 //   fun ref apply_tco(input: Array[MalType], env: MalEnv): (MalType, MalEnv) ? =>
 //     Decoder(_eh).guard_array_length(2, 3, input)?
 //     // TODO: customise error message "Error: condition must be bool"
-//     let condition = Decoder(_eh).as_bool(_e.eval(input(0)?, env)?)?
+//     let condition = Decoder(_eh).as_truthy(_e.eval(input(0)?, env)?)
 //     let condition_expression: MalType = if condition then
 //       input(1)?
 //     else

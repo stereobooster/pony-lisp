@@ -15,12 +15,12 @@ class Decoder
       error
     end
 
-  fun ref as_bool(input: MalType): Bool ? =>
+  fun ref as_truthy(input: MalType): Bool =>
     match input
     | let output: Bool => output
+    | None => false
     else
-      _eh.err("Expected bool instead got " + MalTypeUtils.type_of(input))
-      error
+      true
     end
 
   fun ref as_list(input: MalType): MalList ? =>

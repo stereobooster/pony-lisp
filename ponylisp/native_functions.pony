@@ -85,10 +85,7 @@ class EqualFunction is NativeFunction
   fun name(): String => "="
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).guard_array_length(2, 2, input)?
-    match MalTypeUtils.eq(input(0)?, input(1)?)
-    | let output: Bool => output
-    | None => false
-    end
+    MalTypeUtils.eq(input(0)?, input(1)?)
 
 // TODO: support strings, floats
 class LessFunction is NativeFunction
@@ -137,9 +134,13 @@ class PrStrFunction is NativeFunction
   fun name(): String => "pr-str"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).empty_guard()?
-    Iter[MalType](input.values())
-      .fold[String]("",
-        {(buf, x) => buf + Printer.print_str(x, true) + " " })
+    Iter[MalType](input.values()).fold[String]("", {(buf, x) =>
+      if buf != "" then
+        buf + " " + Printer.print_str(x, true)
+      else
+        Printer.print_str(x, true)
+      end
+    })
 
 class StrFunction is NativeFunction
   let _eh: ErrorHandler
@@ -157,9 +158,13 @@ class PrnFunction is NativeFunction
   fun name(): String => "prn"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).empty_guard()?
-    let str = Iter[MalType](input.values())
-      .fold[String]("",
-        {(buf, x) => buf + Printer.print_str(x, true) + " " })
+    let str = Iter[MalType](input.values()).fold[String]("", {(buf, x) =>
+      if buf != "" then
+        buf + " " + Printer.print_str(x, true)
+      else
+        Printer.print_str(x, true)
+      end
+    })
     _eh.print(str)
     None
 
@@ -169,9 +174,13 @@ class PrintlnFunction is NativeFunction
   fun name(): String => "println"
   fun ref apply(input: Array[MalType]): MalType ? =>
     Decoder(_eh).empty_guard()?
-    let str = Iter[MalType](input.values())
-      .fold[String]("",
-        {(buf, x) => buf + Printer.print_str(x, false) + " " })
+    let str = Iter[MalType](input.values()).fold[String]("", {(buf, x) =>
+      if buf != "" then
+        buf + " " + Printer.print_str(x, false)
+      else
+        Printer.print_str(x, false)
+      end
+    })
     _eh.print(str)
     None
 

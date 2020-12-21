@@ -32,13 +32,13 @@ class MalList
   let value: Array[MalType]
   new create(value': Array[MalType]) => value = value'
   // uniuons doesn't work with fields
-  // fun ref get_value(): Array[MalType] => value
+  fun ref get_value(): Array[MalType] => value
 
 class MalVector
   let value: Array[MalType]
   new create(value': Array[MalType]) => value = value'
   // uniuons doesn't work with fields
-  // fun ref get_value(): Array[MalType] => value
+  fun ref get_value(): Array[MalType] => value
 
 class  MalMap
   let value: Map[String, MalType]
@@ -94,66 +94,79 @@ primitive MalTypeUtils
     // | let x: SpecialFormTCO => Debug("SpecialFormTCO"); Debug(x.name())
     end
 
-  fun eq(first: MalType, second: MalType): (Bool | None) =>
+  fun eq(first: MalType, second: MalType): Bool =>
     match first
     | let first': I64 =>
       match second
-      | let second': I64 => first' == second'
+      | let second': I64 => return first' == second'
       end
     | let first': F64 =>
       match second
-      | let second': F64 => first' == second'
+      | let second': F64 => return first' == second'
       end
     | let first': String =>
       match second
-      | let second': String => first' == second'
+      | let second': String => return first' == second'
       end
     | let first': None =>
       match second
-      | let second': None => first' == second'
+      | let second': None => return first' == second'
       end
     | let first': Bool =>
       match second
-      | let second': Bool => first' == second'
+      | let second': Bool => return first' == second'
       end
     | let first': MalSymbol =>
       match second
-      | let second': MalSymbol => first' == second'
+      | let second': MalSymbol => return first' == second'
       end
     | let first': MalKeyword =>
       match second
-      | let second': MalKeyword => first' == second'
+      | let second': MalKeyword => return first' == second'
       end
     | let first': MalMap =>
       match second
-      | let second': MalMap => first' is second'
+      | let second': MalMap => return first' is second'
       end
-    | let first': MalList =>
+    | let first': (MalList| MalVector) =>
       match second
-      | let second': MalList => first' is second'
-      end
-    | let first': MalVector =>
-      match second
-      | let second': MalVector => first' is second'
+      | let second': (MalList| MalVector) =>
+        if first'.get_value() is second'.get_value() then
+          return true
+        end
+        if first'.get_value().size() != second'.get_value().size() then
+          return false
+        end
+        try
+          for (k, v) in first'.get_value().pairs() do
+            if not eq(v, second'.get_value()(k)?) then
+              return false
+            end
+          end
+          return true
+        else
+          return false
+        end
       end
     | let first': NativeFunction =>
       match second
-      | let second': NativeFunction => first' is second'
+      | let second': NativeFunction => return first' is second'
       end
     | let first': MalLambda =>
       match second
-      | let second': MalLambda => first' is second'
+      | let second': MalLambda => return first' is second'
       end
     | let first': MalAtom =>
       match second
-      | let second': MalAtom => first' is second'
+      | let second': MalAtom => return first' is second'
       end
     | let first': SpecialForm =>
       match second
-      | let second': SpecialForm => first' is second'
+      | let second': SpecialForm => return first' is second'
       end
     // | let first': SpecialFormTCO =>
     //   match second
     //   | let second': SpecialFormTCO => first' is second'
     //   end
     end
+    false
