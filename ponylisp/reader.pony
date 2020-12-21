@@ -1,6 +1,7 @@
 use "regex"
 use "collections"
 use "json"
+// use "debug"
 
 // There seems to ba a bug in Pony type checker - it doesn't allow me to use MalAst here
 // instead it forces me to use MalType
@@ -25,7 +26,9 @@ primitive Tokenizer
     let result: Array[String] = []
     for element in matches do
       // result.push(Token(element(1)?, element.start_pos(), element.end_pos()))
-      result.push(element(1)?)
+      if element(1)?(0)? != ';' then
+        result.push(element(1)?)
+      end
     end
     result
 
@@ -38,6 +41,7 @@ class TokenStream
 
   fun ref next(): String ? =>
     _position = _position + 1
+
     _tokens(_position - 1)?
 
   fun peek(): String ? =>
@@ -87,7 +91,7 @@ class Reader
       // "\u029e" is ʞ, not sure why MAL chose to do it this way
       // | ':' => ";\u029e" + token.cut(0, 1)
       | ':' => MalKeyword(token)
-      | ';' => None // comment
+      // | ';' => None // comment
       else
         MalSymbol(token)
       end

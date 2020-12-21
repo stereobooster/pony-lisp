@@ -75,6 +75,7 @@ class Mal
     else
       _eh.print("Failed to create core functions")
     end
+    _env.set("*ARGV*", MalList([]))
     _env.set("*host-language*", "pony")
 
   fun ref execute(args: Array[String val] val) ? =>

@@ -28,16 +28,16 @@
 (eval (read-string "(+ 2 3)"))
 ;=>5
 
-(slurp "../tests/test.txt")
+(slurp "./tests/test.txt")
 ;=>"A line of text\n"
 
 ;;; Load the same file twice.
-(slurp "../tests/test.txt")
+(slurp "./tests/test.txt")
 ;=>"A line of text\n"
 
 ;; Testing load-file
 
-(load-file "../tests/inc.mal")
+(load-file "./tests/inc.mal")
 ;=>nil
 (inc1 7)
 ;=>8
@@ -107,7 +107,7 @@
 ;; -------- Deferrable Functionality --------
 
 ;; Testing reading of large files
-(load-file "../tests/computations.mal")
+(load-file "./tests/computations.mal")
 ;=>nil
 (sumdown 2)
 ;=>3
@@ -146,7 +146,7 @@
 ;; -------- Optional Functionality --------
 
 ;; Testing comments in a file
-(load-file "../tests/incB.mal")
+(load-file "./tests/incB.mal")
 ;=>nil
 (inc4 7)
 ;=>11
@@ -154,7 +154,7 @@
 ;=>12
 
 ;; Testing map literal across multiple lines in a file
-(load-file "../tests/incC.mal")
+(load-file "./tests/incC.mal")
 ;=>nil
 mymap
 ;=>{"a" 1}
@@ -189,4 +189,3 @@ mymap
 ;;; Hopefully less problematic characters can be checked together
 (read-string "1; &()*+,-./:;<=>?@[]^_{|}~")
 ;=>1
-
